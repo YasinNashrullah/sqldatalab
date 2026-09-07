@@ -88,6 +88,7 @@ class Settings(BaseSettings):
         "http://localhost:8000",
         "http://127.0.0.1:8000",
     ]
+    CORS_ORIGIN_REGEX: str | None = r"^https:\/\/.*\.vercel\.app$"
 
     @field_validator("CORS_ORIGINS", mode="after")
     @classmethod
