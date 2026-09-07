@@ -82,13 +82,14 @@ async def register(
     token = create_access_token({"sub": user.id, "email": user.email, "username": user.username})
 
     # Set HTTP-Only Secure Cookie
+    is_prod = settings.ENVIRONMENT == "production"
     response.set_cookie(
         key=settings.COOKIE_NAME,
         value=token,
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
-        secure=False,  # Set to True in HTTPS production
+        samesite="none" if is_prod else "lax",
+        secure=is_prod,
     )
 
     data = {
@@ -121,13 +122,14 @@ async def login(
     token = create_access_token({"sub": user.id, "email": user.email, "username": user.username})
 
     # Set HTTP-Only Cookie
+    is_prod = settings.ENVIRONMENT == "production"
     response.set_cookie(
         key=settings.COOKIE_NAME,
         value=token,
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
-        secure=False,
+        samesite="none" if is_prod else "lax",
+        secure=is_prod,
     )
 
     # Fetch user's workspaces

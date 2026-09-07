@@ -22,6 +22,20 @@ export interface ApiResponse<T> {
   error?: ApiError;
 }
 
+export function getStoredToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("datalab_token");
+}
+
+export function setStoredToken(token: string | null): void {
+  if (typeof window === "undefined") return;
+  if (token) {
+    localStorage.setItem("datalab_token", token);
+  } else {
+    localStorage.removeItem("datalab_token");
+  }
+}
+
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -31,6 +45,11 @@ export async function apiRequest<T>(
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string> || {}),
   };
+
+  const storedToken = getStoredToken();
+  if (storedToken && !headers["Authorization"]) {
+    headers["Authorization"] = `Bearer ${storedToken}`;
+  }
 
   if (!(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
@@ -47,9 +66,17 @@ export async function apiRequest<T>(
     const result: ApiResponse<T> = await response.json();
 
     if (!response.ok || !result.success) {
+      let msg = result.error?.message;
+      if (!msg && (result as any).detail) {
+        if (Array.isArray((result as any).detail)) {
+          msg = (result as any).detail.map((d: any) => `${d.loc?.slice(-1)[0]}: ${d.msg}`).join(", ");
+        } else {
+          msg = String((result as any).detail);
+        }
+      }
       const err: ApiError = result.error || {
         code: "HTTP_ERROR",
-        message: `Request failed with status ${response.status}`,
+        message: msg || `Request failed with status ${response.status}`,
       };
       throw err;
     }
@@ -69,9 +96,28 @@ export async function apiRequest<T>(
 // API Endpoints helpers
 export const api = {
   // Auth & Profile
-  register: (data: any) => apiRequest<any>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
-  login: (data: any) => apiRequest<any>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
-  logout: () => apiRequest<any>("/auth/logout", { method: "POST" }),
+  register: async (data: any) => {
+    const res = await apiRequest<any>("/auth/register", { method: "POST", body: JSON.stringify(data) });
+    if (res && res.access_token) {
+      setStoredToken(res.access_token);
+    }
+    return res;
+  },
+  login: async (data: any) => {
+    const res = await apiRequest<any>("/auth/login", { method: "POST", body: JSON.stringify(data) });
+    if (res && res.access_token) {
+      setStoredToken(res.access_token);
+    }
+    return res;
+  },
+  logout: async () => {
+    setStoredToken(null);
+    try {
+      return await apiRequest<any>("/auth/logout", { method: "POST" });
+    } catch {
+      return null;
+    }
+  },
   getMe: () => apiRequest<any>("/auth/me"),
   getProfile: () => apiRequest<{ user: any; stats: any }>("/auth/profile"),
   updateProfile: (data: { full_name?: string; email?: string }) =>

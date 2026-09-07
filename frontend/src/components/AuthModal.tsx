@@ -63,7 +63,7 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
     const demoUser = `demo_${Math.floor(Math.random() * 9000 + 1000)}`;
     try {
       const res = await api.register({
-        email: `${demoUser}@sqldatalab.local`,
+        email: `${demoUser}@sqldatalab.com`,
         username: demoUser,
         password: "DemoPassword123!",
         full_name: "Demo Analyst",

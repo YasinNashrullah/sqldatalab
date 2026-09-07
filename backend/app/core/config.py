@@ -103,7 +103,7 @@ class Settings(BaseSettings):
                         return [str(item).strip() for item in parsed if str(item).strip()]
                 except Exception:
                     pass
-            return [origin.strip().strip("\"'") for origin in v_trimmed.split(",") if origin.strip().strip("\"'")]
+            return [origin.strip().strip("\"'").rstrip("/") for origin in v_trimmed.split(",") if origin.strip().strip("\"'")]
         return v
 
     model_config = SettingsConfigDict(
