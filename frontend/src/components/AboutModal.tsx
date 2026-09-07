@@ -165,7 +165,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
                 </span>
                 <div className="flex items-center gap-1.5">
                   <a
-                    href="https://github.com"
+                    href="https://github.com/YasinNashrullah"
                     target="_blank"
                     rel="noreferrer"
                     className="win-btn text-[11px] py-0.5 px-2 flex items-center gap-1 font-bold"
@@ -176,7 +176,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
                     <span>GitHub</span>
                   </a>
                   <a
-                    href="https://linkedin.com"
+                    href="https://www.linkedin.com/in/yasin-nashrullah-85191b289/"
                     target="_blank"
                     rel="noreferrer"
                     className="win-btn text-[11px] py-0.5 px-2 flex items-center gap-1 font-bold text-blue-700"
@@ -187,7 +187,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
                     <span>LinkedIn</span>
                   </a>
                   <a
-                    href="mailto:contact@example.com"
+                    href="yasinnashrullah@gmail.com"
                     className="win-btn text-[11px] py-0.5 px-2 flex items-center gap-1 font-bold"
                   >
                     <Mail size={12} />
