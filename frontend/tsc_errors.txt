@@ -1,0 +1,8 @@
+﻿src/components/ExportCustomizerModal.tsx(151,32): error TS2349: This expression is not callable.
+  Type 'String' has no call signatures.
+src/components/TableStatsModal.tsx(142,40): error TS2349: This expression is not callable.
+  Type 'String' has no call signatures.
+src/components/UploadModal.tsx(167,38): error TS2349: This expression is not callable.
+  Type 'String' has no call signatures.
+src/components/UploadModal.tsx(247,38): error TS2349: This expression is not callable.
+  Type 'String' has no call signatures.

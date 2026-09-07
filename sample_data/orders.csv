@@ -1,0 +1,16 @@
+order_id,customer_id,category,product_name,amount,order_date
+ORD-101,C001,Electronics,Mechanical Keyboard,120.00,2025-05-01
+ORD-102,C001,Books,Database Internals,45.50,2025-05-03
+ORD-103,C002,Electronics,Ultrawide Monitor,450.00,2025-05-05
+ORD-104,C003,Clothing,Hoodie Heavyweight,75.00,2025-05-07
+ORD-105,C004,Electronics,Noise Cancelling Headphone,280.00,2025-05-10
+ORD-106,C005,Books,Designing Data-Intensive Applications,55.00,2025-05-12
+ORD-107,C002,Clothing,Running Shoes,110.00,2025-05-15
+ORD-108,C006,Home,Ergonomic Chair,320.00,2025-05-18
+ORD-109,C007,Electronics,Graphics Tablet,190.00,2025-05-20
+ORD-110,C008,Books,Learning SQL,38.00,2025-05-22
+ORD-111,C009,Clothing,Backpack Waterproof,85.00,2025-05-25
+ORD-112,C010,Electronics,USB-C Docking Station,140.00,2025-05-28
+ORD-113,C003,Electronics,Wireless Mouse,45.00,2025-06-02
+ORD-114,C004,Home,Desk Mat Minimalist,25.00,2025-06-05
+ORD-115,C001,Electronics,Webcam 4K,95.00,2025-06-08

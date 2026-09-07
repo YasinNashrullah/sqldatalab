@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - SECRET_KEY=${SECRET_KEY:-prod-secret-replace-with-secure-random-token}
+      - DATABASE_URL=sqlite+aiosqlite:////app/storage/metadata.db
+      - DUCKDB_MEMORY_LIMIT=2GB
+      - DUCKDB_THREADS=4
+      - QUERY_TIMEOUT_SECONDS=30
+      - MAX_UPLOAD_SIZE_BYTES=52428800
+    volumes:
+      - ./storage:/app/storage
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    depends_on:
+      - backend
