@@ -99,7 +99,7 @@ export const TableStatsModal: React.FC<TableStatsModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 sm:p-4 select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[0.5px] animate-fadeIn p-3 sm:p-4 select-none"
     >
       <div
         onClick={(e) => e.stopPropagation()}

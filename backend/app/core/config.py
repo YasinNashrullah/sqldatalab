@@ -41,6 +41,7 @@ class Settings(BaseSettings):
         return v
 
     # File storage paths
+    BASE_DIR: Path = BASE_DIR
     STORAGE_DIR: Path = STORAGE_DIR
     STAGING_DIR: Path = STAGING_DIR
     WORKSPACES_DIR: Path = WORKSPACES_DIR

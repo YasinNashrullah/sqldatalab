@@ -64,7 +64,7 @@ export function SQLSnippetsDrawer({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-end select-none"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[0.5px] animate-fadeIn flex justify-end select-none"
     >
       <div
         onClick={(e) => e.stopPropagation()}

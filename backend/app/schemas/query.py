@@ -22,6 +22,8 @@ class SavedQueryCreate(BaseModel):
     description: str | None = None
     query_text: str = Field(min_length=1)
     tags: list[str] = Field(default_factory=list)
+    tags_json: str | None = None
+    category: str | None = None
 
 
 class SavedQueryUpdate(BaseModel):
@@ -29,6 +31,8 @@ class SavedQueryUpdate(BaseModel):
     description: str | None = None
     query_text: str | None = Field(default=None, min_length=1)
     tags: list[str] | None = None
+    tags_json: str | None = None
+    category: str | None = None
 
 
 class SavedQueryResponse(BaseModel):

@@ -77,7 +77,7 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 select-none">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[0.5px] animate-fadeIn flex items-center justify-center p-3 select-none">
       <div className="win-window w-full max-w-md shadow-2xl p-0 flex flex-col bg-[var(--win-surface)] text-[var(--win-text)]">
         {/* Windows Titlebar */}
         <div className="win-titlebar">

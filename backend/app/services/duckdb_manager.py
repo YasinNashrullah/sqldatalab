@@ -322,14 +322,11 @@ class DuckDBManager:
             for col in desc:
                 col_name = str(col[0])
                 col_type = str(col[1])
-                is_pk = col_name.lower() in ("id", f"{tbl.lower()}_id", f"{tbl.rstrip('s').lower()}_id")
-                is_fk = col_name.lower().endswith("_id") and not is_pk
-
                 columns.append({
                     "name": col_name,
                     "type": col_type,
-                    "is_pk_hint": is_pk,
-                    "is_fk_hint": is_fk,
+                    "is_pk_hint": False,
+                    "is_fk_hint": False,
                 })
 
             table_cols_map[tbl] = columns
@@ -340,34 +337,106 @@ class DuckDBManager:
                 "columns": columns,
             })
 
-        # Infer relationships between tables
+        # Step 1: Detect Primary Key (PK) candidate for each table
+        pk_map: dict[str, str] = {}
+        for tbl, cols in table_cols_map.items():
+            col_names_lower = [c["name"].lower() for c in cols]
+            tbl_lower = tbl.lower()
+            candidates = ["id", f"{tbl_lower}_id", f"{tbl_lower.rstrip('s')}_id", f"{tbl_lower.rstrip('es')}_id"]
+            found_pk = None
+            for cand in candidates:
+                if cand in col_names_lower:
+                    found_pk = cols[col_names_lower.index(cand)]["name"]
+                    break
+            
+            # Fallback: look for common key identifiers (sku, code, hub_id, or first col ending in _id or _no)
+            if not found_pk and cols:
+                for c in cols:
+                    c_low = c["name"].lower()
+                    if c_low in ("sku", "code", "hub_id", "record_id", "tracking_no") or c_low.endswith("_id") or c_low.endswith("_no"):
+                        found_pk = c["name"]
+                        break
+
+            # Ultimate fallback: 1st column
+            if not found_pk and cols:
+                found_pk = cols[0]["name"]
+            
+            if found_pk:
+                pk_map[tbl] = found_pk
+                # Mark is_pk_hint on the column
+                for c in cols:
+                    if c["name"] == found_pk:
+                        c["is_pk_hint"] = True
+
+        # Step 2: Infer relationships (edges) and foreign keys between tables
         edges = []
         edge_id = 1
         for source_table, cols in table_cols_map.items():
+            src_pk = pk_map.get(source_table)
             for col in cols:
-                col_name = col["name"].lower()
-                if col_name.endswith("_id") and not col["is_pk_hint"]:
-                    ref_prefix = col_name[:-3]  # e.g., 'customer' from 'customer_id'
-                    
-                    # Look for matching target table: 'customers', 'customer', or exact match
-                    for target_table in table_names:
-                        if target_table == source_table:
-                            continue
-                        target_lower = target_table.lower()
-                        if target_lower in (ref_prefix, f"{ref_prefix}s", f"{ref_prefix}es") or target_lower.rstrip("s") == ref_prefix:
-                            # Target must have an 'id' column or '<ref_prefix>_id'
-                            target_has_id = any(c["name"].lower() in ("id", col_name) for c in table_cols_map.get(target_table, []))
-                            if target_has_id:
-                                edges.append({
-                                    "id": f"edge_{edge_id}",
-                                    "from_table": source_table,
-                                    "from_column": col["name"],
-                                    "to_table": target_table,
-                                    "to_column": "id" if any(c["name"].lower() == "id" for c in table_cols_map.get(target_table, [])) else col_name,
-                                    "label": f"{source_table}.{col['name']} ➔ {target_table}",
-                                })
-                                edge_id += 1
-                                break
+                c_name = col["name"]
+                c_low = c_name.lower()
+                
+                # Skip if this column is the table's own primary key
+                if c_name == src_pk:
+                    continue
+
+                matched = False
+                for target_table in table_names:
+                    if target_table == source_table:
+                        continue
+                    tgt_pk = pk_map.get(target_table)
+                    tgt_cols = [c["name"].lower() for c in table_cols_map.get(target_table, [])]
+
+                    # Rule 1: Exact column name matches target table PK (e.g. customer_id, product_id, sku, supplier_id)
+                    if tgt_pk and c_low == tgt_pk.lower():
+                        col["is_fk_hint"] = True
+                        edges.append({
+                            "id": f"edge_{edge_id}",
+                            "from_table": source_table,
+                            "from_column": c_name,
+                            "to_table": target_table,
+                            "to_column": tgt_pk,
+                            "label": f"{source_table}.{c_name} ➔ {target_table}.{tgt_pk}",
+                        })
+                        edge_id += 1
+                        matched = True
+                        break
+
+                    # Rule 2: Column ends with _id and prefix matches target table name (e.g. patient_id -> patients)
+                    if c_low.endswith("_id"):
+                        ref_prefix = c_low[:-3]
+                        tgt_low = target_table.lower()
+                        if (tgt_low in (ref_prefix, f"{ref_prefix}s", f"{ref_prefix}es") or 
+                            tgt_low.rstrip("s") == ref_prefix):
+                            target_col = tgt_pk if tgt_pk else c_name
+                            col["is_fk_hint"] = True
+                            edges.append({
+                                "id": f"edge_{edge_id}",
+                                "from_table": source_table,
+                                "from_column": c_name,
+                                "to_table": target_table,
+                                "to_column": target_col,
+                                "label": f"{source_table}.{c_name} ➔ {target_table}.{target_col}",
+                            })
+                            edge_id += 1
+                            matched = True
+                            break
+
+                    # Rule 3: Compound FK match (e.g. origin_hub_id / dest_hub_id -> hub_id in warehouses)
+                    if tgt_pk and tgt_pk.lower().endswith("_id") and c_low.endswith(tgt_pk.lower()):
+                        col["is_fk_hint"] = True
+                        edges.append({
+                            "id": f"edge_{edge_id}",
+                            "from_table": source_table,
+                            "from_column": c_name,
+                            "to_table": target_table,
+                            "to_column": tgt_pk,
+                            "label": f"{source_table}.{c_name} ➔ {target_table}.{tgt_pk}",
+                        })
+                        edge_id += 1
+                        matched = True
+                        break
 
         return {
             "nodes": nodes,

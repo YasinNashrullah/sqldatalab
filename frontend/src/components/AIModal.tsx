@@ -117,7 +117,7 @@ export function AIModal({
   return (
     <div 
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 select-none"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[0.5px] animate-fadeIn flex items-center justify-center p-3 select-none"
     >
       <div 
         onClick={(e) => e.stopPropagation()}

@@ -27,7 +27,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 select-none"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[0.5px] animate-fadeIn flex items-center justify-center p-4 select-none"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -187,7 +187,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
                     <span>LinkedIn</span>
                   </a>
                   <a
-                    href="yasinnashrullah@gmail.com"
+                    href="mailto:yasinnashrullah@gmail.com"
                     className="win-btn text-[11px] py-0.5 px-2 flex items-center gap-1 font-bold"
                   >
                     <Mail size={12} />

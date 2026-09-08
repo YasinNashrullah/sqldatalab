@@ -52,11 +52,13 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
       setLoading(true);
       setErrorMsg("");
       const res = await api.createWorkspace({ name, description });
+      const createdWs = res?.workspace || res;
       setName("");
       setDescription("");
-      if (onWorkspaceCreated) onWorkspaceCreated(res.workspace);
+      if (onWorkspaceCreated) onWorkspaceCreated(createdWs);
       if (onWorkspacesChanged) {
-        onWorkspacesChanged([...workspaces, res.workspace], res.workspace);
+        const cleanList = (workspaces || []).filter(Boolean);
+        onWorkspacesChanged([...cleanList, createdWs], createdWs);
       }
       setMode("manage");
     } catch (err: any) {
@@ -72,8 +74,10 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
       setLoading(true);
       setErrorMsg("");
       const res = await api.updateWorkspace(id, { name: editName, description: editDesc });
-      const updatedList = workspaces.map((w) => (w.id === id ? res.workspace : w));
-      if (onWorkspaceUpdated) onWorkspaceUpdated(res.workspace);
+      const updatedWs = res?.workspace || res;
+      const cleanList = (workspaces || []).filter(Boolean);
+      const updatedList = cleanList.map((w) => (w.id === id ? { ...w, ...updatedWs } : w));
+      if (onWorkspaceUpdated) onWorkspaceUpdated(updatedWs);
       if (onWorkspacesChanged) onWorkspacesChanged(updatedList);
       setEditId(null);
     } catch (err: any) {
@@ -102,7 +106,7 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[0.5px] animate-fadeIn p-3 select-none"
     >
       <div
         onClick={(e) => e.stopPropagation()}

@@ -126,11 +126,24 @@ class AIServiceUnavailableError(AppException):
         )
 
 
+def _cors_headers(request: Request) -> dict[str, str]:
+    origin = request.headers.get("origin")
+    if not origin:
+        return {}
+    return {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Expose-Headers": "X-Request-ID, X-Response-Time-MS, Content-Disposition",
+        "Vary": "Origin",
+    }
+
+
 async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
     request_id = getattr(request.state, "request_id", "req_unknown")
     logger.warning(f"[{request_id}] AppException: {exc.code} - {exc.message}")
     return JSONResponse(
         status_code=exc.status_code,
+        headers=_cors_headers(request),
         content={
             "success": False,
             "error": {
@@ -155,6 +168,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     summary_msg = "; ".join(f"{e['field'].split(' -> ')[-1]}: {e['msg']}" for e in formatted_errors) if formatted_errors else "Request validation failed."
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        headers=_cors_headers(request),
         content={
             "success": False,
             "error": {
@@ -172,6 +186,7 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
     logger.error(f"[{request_id}] Unhandled error: {exc}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        headers=_cors_headers(request),
         content={
             "success": False,
             "error": {

@@ -113,7 +113,7 @@ async def create_workspace(
         "dataset_count": 0,
         "table_count": 0,
     }
-    return success_envelope(data, req_id)
+    return success_envelope({"workspace": data, **data}, req_id)
 
 
 @router.get("/{workspace_id}")

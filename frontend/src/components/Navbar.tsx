@@ -18,8 +18,6 @@ interface NavbarProps {
   user: any;
   workspaces?: any[];
   currentWorkspace?: any;
-  themeMode?: "winxp" | "dark";
-  onToggleTheme?: () => void;
   onSelectWorkspace?: (ws: any) => void;
   onOpenUpload: () => void;
   onOpenChallenges: () => void;
@@ -31,6 +29,7 @@ interface NavbarProps {
   onOpenSnippets: () => void;
   onOpenDiagram: () => void;
   onOpenAbout: () => void;
+  onOpenDatasetGallery: () => void;
   onLogout: () => void;
   onToggleSidebar: () => void;
   isSidebarOpen: boolean;
@@ -48,6 +47,7 @@ function NavbarComponent({
   onOpenSnippets,
   onOpenDiagram,
   onOpenAbout,
+  onOpenDatasetGallery,
   onLogout,
   onToggleSidebar,
   isSidebarOpen,
@@ -142,6 +142,16 @@ function NavbarComponent({
               >
                 <UploadCloud size={13} />
                 <span>{t.navbar.menuUploadCsv}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveMenu(null);
+                  onOpenDatasetGallery();
+                }}
+                className="w-full text-left px-3 py-1 hover:bg-[#0055ea] hover:text-white flex items-center gap-2"
+              >
+                <span>📁</span>
+                <span>{t.navbar.menuDatasetGallery}</span>
               </button>
               <button
                 onClick={() => {
@@ -292,6 +302,15 @@ function NavbarComponent({
           >
             <UploadCloud size={13} className="text-blue-700" />
             <span className="hidden sm:inline">{t.sidebar.uploadCSV}</span>
+          </button>
+
+          <button
+            onClick={onOpenDatasetGallery}
+            title={t.datasetGallery.title}
+            className="win-btn text-xs py-0.5 font-bold text-blue-800 dark:text-blue-300"
+          >
+            <span>📁</span>
+            <span className="hidden sm:inline">{t.navbar.datasetGalleryBtn}</span>
           </button>
 
           <button

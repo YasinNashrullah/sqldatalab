@@ -20,6 +20,7 @@ interface SchemaDiagramModalProps {
   onClose: () => void;
   workspaceId: string;
   onSelectTable: (tableName: string) => void;
+  onSelectQuery?: (query: string) => void;
 }
 
 export function SchemaDiagramModal({
@@ -27,6 +28,7 @@ export function SchemaDiagramModal({
   onClose,
   workspaceId,
   onSelectTable,
+  onSelectQuery,
 }: SchemaDiagramModalProps) {
   const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
@@ -70,7 +72,7 @@ export function SchemaDiagramModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 sm:p-4 select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[0.5px] animate-fadeIn p-3 sm:p-4 select-none"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -222,7 +224,7 @@ export function SchemaDiagramModal({
                     {graphData.edges.map((edge) => (
                       <div
                         key={edge.id}
-                        className="win-inset p-1.5 text-[11px] font-mono flex items-center justify-between bg-[var(--win-inset-bg)] text-[var(--win-text)]"
+                        className="win-inset p-1.5 text-[11px] font-mono flex items-center justify-between bg-[var(--win-inset-bg)] text-[var(--win-text)] gap-2"
                       >
                         <div className="flex items-center gap-1 truncate">
                           <span className="text-blue-700 font-bold">{edge.from_table}</span>
@@ -231,6 +233,21 @@ export function SchemaDiagramModal({
                           <span className="text-emerald-700 font-bold">{edge.to_table}</span>
                           <span className="text-[var(--win-text-muted)]">.{edge.to_column}</span>
                         </div>
+                        <button
+                          onClick={() => {
+                            const joinSql = `SELECT a.*, b.*\nFROM "${edge.from_table}" a\nJOIN "${edge.to_table}" b ON a."${edge.from_column}" = b."${edge.to_column}"\nLIMIT 50;`;
+                            if (onSelectQuery) {
+                              onSelectQuery(joinSql);
+                            } else {
+                              onSelectTable(edge.from_table);
+                            }
+                            onClose();
+                          }}
+                          className="win-btn text-[10px] font-bold text-blue-700 !py-0.5 !px-1.5 shrink-0 hover:bg-blue-100"
+                          title={language === "id" ? "Buka kueri JOIN di SQL Editor" : "Open JOIN query in SQL Editor"}
+                        >
+                          SQL JOIN
+                        </button>
                       </div>
                     ))}
                   </div>

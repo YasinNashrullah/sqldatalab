@@ -26,6 +26,7 @@ interface DatabaseExplorerProps {
   onInspectTable?: (tableName: string) => void;
   onDeleteDataset: (datasetId: string) => void;
   onOpenUpload: () => void;
+  onOpenDatasetGallery?: () => void;
 }
 
 export function DatabaseExplorerComponent({
@@ -39,6 +40,7 @@ export function DatabaseExplorerComponent({
   onInspectTable,
   onDeleteDataset,
   onOpenUpload,
+  onOpenDatasetGallery,
 }: DatabaseExplorerProps) {
   const { t, language } = useLanguage();
   const [search, setSearch] = useState("");
@@ -144,15 +146,26 @@ export function DatabaseExplorerComponent({
       {/* Dataset & Table Tree (Sunken Panel) */}
       <div className="flex-1 overflow-y-auto win-inset m-1 p-1 space-y-1.5">
         {filteredDatasets.length === 0 ? (
-          <div className="p-4 text-center">
-            <p className="text-xs text-[var(--win-text-muted)] mb-2">{t.sidebar.noDatasets}</p>
-            <button
-              onClick={onOpenUpload}
-              className="win-btn text-xs font-bold"
-            >
-              <UploadCloud size={12} />
-              <span>{t.sidebar.importCsv}</span>
-            </button>
+          <div className="p-4 text-center space-y-2">
+            <p className="text-xs text-[var(--win-text-muted)]">{t.sidebar.noDatasets}</p>
+            <div className="flex flex-col gap-1.5 items-center">
+              <button
+                onClick={onOpenUpload}
+                className="win-btn text-xs font-bold w-full max-w-[170px] justify-center"
+              >
+                <UploadCloud size={12} />
+                <span>{t.sidebar.importCsv}</span>
+              </button>
+              {onOpenDatasetGallery && (
+                <button
+                  onClick={onOpenDatasetGallery}
+                  className="win-btn text-xs font-bold w-full max-w-[170px] justify-center text-blue-700 dark:text-blue-300"
+                >
+                  <span>📁</span>
+                  <span>{language === "id" ? "Template Dataset" : "Dataset Templates"}</span>
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           filteredDatasets.map((ds) => (

@@ -48,7 +48,7 @@ export function SavedQueriesDrawer({
   const loadQueries = async () => {
     if (!workspaceId) return;
     try {
-      const res = await api.getSavedQueries(workspaceId, search || undefined, selectedTag || undefined);
+      const res = await api.getSavedQueries(workspaceId);
       setQueries(res?.saved_queries || []);
     } catch (e) {
       console.error(e);
@@ -67,16 +67,20 @@ export function SavedQueriesDrawer({
   };
 
   const getTags = (q: SavedQueryItem): string[] => {
-    if (Array.isArray(q.tags) && q.tags.length > 0) return q.tags;
-    if (q.tags_json) {
+    let raw: any[] = [];
+    if (Array.isArray(q.tags) && q.tags.length > 0) {
+      raw = q.tags;
+    } else if (q.tags_json) {
       try {
         const parsed = JSON.parse(q.tags_json);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) raw = parsed;
       } catch {
-        return [];
+        raw = [];
       }
     }
-    return [];
+    return raw
+      .map((t) => String(t).trim().replace(/^#/, ""))
+      .filter(Boolean);
   };
 
   // Collect all unique tags across all saved queries
@@ -85,19 +89,24 @@ export function SavedQueriesDrawer({
     queries.forEach((q) => {
       getTags(q).forEach((t) => tagsSet.add(t));
     });
-    return Array.from(tagsSet);
+    return Array.from(tagsSet).sort();
   }, [queries]);
 
   if (!isOpen) return null;
 
   const filtered = queries.filter((q) => {
     const tags = getTags(q);
+    const searchLower = search.trim().toLowerCase();
     const matchesSearch =
-      q.title.toLowerCase().includes(search.toLowerCase()) ||
-      q.query_text.toLowerCase().includes(search.toLowerCase()) ||
-      tags.some((t) => t.toLowerCase().includes(search.toLowerCase()));
+      !searchLower ||
+      q.title.toLowerCase().includes(searchLower) ||
+      q.query_text.toLowerCase().includes(searchLower) ||
+      tags.some((t) => t.toLowerCase().includes(searchLower.replace(/^#/, "")));
 
-    const matchesTag = !selectedTag || tags.includes(selectedTag);
+    const cleanSelectedTag = selectedTag ? selectedTag.trim().toLowerCase().replace(/^#/, "") : null;
+    const matchesTag =
+      !cleanSelectedTag ||
+      tags.some((t) => t.toLowerCase() === cleanSelectedTag);
 
     return matchesSearch && matchesTag;
   });
@@ -105,7 +114,7 @@ export function SavedQueriesDrawer({
   return (
     <div 
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-end select-none"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[0.5px] animate-fadeIn flex justify-end select-none"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
@@ -150,18 +159,23 @@ export function SavedQueriesDrawer({
               >
                 {t.savedQueries.allTags}
               </button>
-              {allTags.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setSelectedTag(selectedTag === t ? null : t)}
-                  className={`win-btn text-[10px] !px-1.5 !py-0.5 flex items-center gap-0.5 ${
-                    selectedTag === t ? "win-inset font-bold text-blue-700" : ""
-                  }`}
-                >
-                  <Tag size={9} />
-                  <span>#{t.replace(/^#/, "")}</span>
-                </button>
-              ))}
+              {allTags.map((t) => {
+                const isSelected = selectedTag?.toLowerCase().replace(/^#/, "") === t.toLowerCase();
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setSelectedTag(isSelected ? null : t)}
+                    className={`win-btn text-[10px] !px-1.5 !py-0.5 flex items-center gap-0.5 transition cursor-pointer select-none ${
+                      isSelected
+                        ? "win-inset font-bold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 border border-blue-500"
+                        : ""
+                    }`}
+                  >
+                    <Tag size={9} />
+                    <span>#{t}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>

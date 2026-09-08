@@ -22,6 +22,27 @@ export interface ApiResponse<T> {
   error?: ApiError;
 }
 
+export interface DatasetTableInfo {
+  table_name: string;
+  filename: string;
+  row_count: number;
+  column_count: number;
+  columns: string[];
+  file_size_bytes: number;
+}
+
+export interface DatasetTemplate {
+  id: string;
+  name: string;
+  category: string;
+  folder_path: string;
+  description: string;
+  total_tables: number;
+  total_rows: number;
+  tables: DatasetTableInfo[];
+  sample_query: string;
+}
+
 export function getStoredToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("datalab_token");
@@ -137,8 +158,32 @@ export const api = {
   // Datasets
   listDatasets: (workspaceId: string) => apiRequest<{ datasets: any[] }>(`/datasets?workspace_id=${workspaceId}`),
   uploadDatasets: (formData: FormData) => apiRequest<any>("/datasets/upload", { method: "POST", body: formData }),
-  getDatasetPreview: (datasetId: string) => apiRequest<any>(`/datasets/${datasetId}/preview`),
+  getDatasetPreview: (datasetId: string, tableName?: string) =>
+    apiRequest<any>(`/datasets/${datasetId}/preview${tableName ? `?table_name=${encodeURIComponent(tableName)}` : ""}`),
   deleteDataset: (datasetId: string) => apiRequest<any>(`/datasets/${datasetId}`, { method: "DELETE" }),
+  // Dataset Templates
+  listDatasetTemplates: () =>
+    apiRequest<{ templates: DatasetTemplate[]; total: number }>("/datasets/templates"),
+  getTemplateDownloadUrl: (templateId: string, file?: string) => {
+    let url = `${API_BASE_URL}/datasets/templates/${templateId}/download`;
+    if (file) url += `?file=${encodeURIComponent(file)}`;
+    return url;
+  },
+  useDatasetTemplate: (templateId: string, workspaceName?: string) =>
+    apiRequest<{
+      workspace: any;
+      workspace_id: string;
+      workspace_name: string;
+      tables: DatasetTableInfo[];
+      table_name: string;
+      row_count: number;
+      column_count: number;
+      sample_query: string;
+      message: string;
+    }>("/datasets/templates/use", {
+      method: "POST",
+      body: JSON.stringify({ template_id: templateId, workspace_name: workspaceName }),
+    }),
 
   // SQL & Inspection
   executeSQL: (data: { workspace_id: string; query: string; limit?: number }) =>

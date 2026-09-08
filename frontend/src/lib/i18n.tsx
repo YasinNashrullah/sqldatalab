@@ -52,6 +52,8 @@ export interface Translations {
     menuErd: string;
     menuChallenges: string;
     menuAbout: string;
+    menuDatasetGallery: string;
+    datasetGalleryBtn: string;
     snippetsBtn: string;
     erdBtn: string;
     profileTooltip: string;
@@ -533,6 +535,26 @@ export interface Translations {
     switchToLogin: string;
     loading: string;
   };
+  datasetGallery: {
+    title: string;
+    subtitle: string;
+    close: string;
+    searchPlaceholder: string;
+    filterAll: string;
+    downloadCsv: string;
+    useInWorkspace: string;
+    usingTemplate: string;
+    quotaFull: string;
+    quotaWarning: string;
+    rowsBadge: (count: number) => string;
+    colsBadge: (count: number) => string;
+    tablesBadge: (count: number) => string;
+    folderLabel: string;
+    downloadZip: string;
+    includedTables: string;
+    sampleQuery: string;
+    successCreated: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -584,6 +606,8 @@ export const translations: Record<Language, Translations> = {
       menuErd: "ERD Schema Diagram...",
       menuChallenges: "Challenges...",
       menuAbout: "About SQLDataLab...",
+      menuDatasetGallery: "Template Dataset...",
+      datasetGalleryBtn: "Dataset",
       snippetsBtn: "Snippets",
       erdBtn: "ERD",
       profileTooltip: "Profil Pengguna",
@@ -1065,6 +1089,26 @@ export const translations: Record<Language, Translations> = {
       switchToLogin: "Sudah punya akun? Masuk di sini",
       loading: "Memproses Otentikasi...",
     },
+    datasetGallery: {
+      title: "Galeri Template Dataset",
+      subtitle: "Jelajahi dan gunakan koleksi template dataset industri siap pakai langsung di DuckDB.",
+      close: "Tutup",
+      searchPlaceholder: "Cari template dataset...",
+      filterAll: "Semua Kategori",
+      downloadCsv: "Unduh CSV",
+      useInWorkspace: "Gunakan di Workspace Baru",
+      usingTemplate: "Menyiapkan Workspace & DuckDB...",
+      quotaFull: "Kuota Penuh (Maks 3)",
+      quotaWarning: "Anda telah mencapai batas maksimum 3 workspace. Hapus salah satu workspace terlebih dahulu untuk membuat workspace baru dari template.",
+      rowsBadge: (count: number) => `${count} baris`,
+      colsBadge: (count: number) => `${count} kolom`,
+      tablesBadge: (count: number) => `${count} tabel`,
+      folderLabel: "Folder:",
+      downloadZip: "Unduh ZIP",
+      includedTables: "Tabel Relasional Terkait:",
+      sampleQuery: "Contoh Query SQL:",
+      successCreated: "Workspace berhasil dibuat dan dataset dimuat ke DuckDB!",
+    },
   },
   en: {
     common: {
@@ -1114,6 +1158,8 @@ export const translations: Record<Language, Translations> = {
       menuErd: "ERD Schema Diagram...",
       menuChallenges: "Challenges...",
       menuAbout: "About SQLDataLab...",
+      menuDatasetGallery: "Dataset Templates...",
+      datasetGalleryBtn: "Datasets",
       snippetsBtn: "Snippets",
       erdBtn: "ERD",
       profileTooltip: "User Profile",
@@ -1594,6 +1640,26 @@ export const translations: Record<Language, Translations> = {
       switchToRegister: "Don't have an account? Sign up now",
       switchToLogin: "Already have an account? Sign in here",
       loading: "Processing Authentication...",
+    },
+    datasetGallery: {
+      title: "Dataset Template",
+      subtitle: "Explore and import pre-built industry datasets directly into DuckDB in-memory workspace.",
+      close: "Close",
+      searchPlaceholder: "Search dataset templates...",
+      filterAll: "All Categories",
+      downloadCsv: "Download CSV",
+      useInWorkspace: "Use in New Workspace",
+      usingTemplate: "Provisioning Workspace & DuckDB...",
+      quotaFull: "Quota Reached (Max 3)",
+      quotaWarning: "You have reached the maximum limit of 3 workspaces. Please delete an existing workspace before creating a new one from template.",
+      rowsBadge: (count: number) => `${count} rows`,
+      colsBadge: (count: number) => `${count} cols`,
+      tablesBadge: (count: number) => `${count} tables`,
+      folderLabel: "Folder:",
+      downloadZip: "Download ZIP",
+      includedTables: "Included Relational Tables:",
+      sampleQuery: "Suggested SQL Query:",
+      successCreated: "Workspace created successfully and dataset loaded into DuckDB!",
     },
   },
 };

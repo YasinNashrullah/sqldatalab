@@ -22,6 +22,7 @@ import { SchemaDiagramModal } from "@/components/SchemaDiagramModal";
 import { QueryDiffModal, QueryRunInfo } from "@/components/QueryDiffModal";
 import { ExportCustomizerModal } from "@/components/ExportCustomizerModal";
 import { AboutModal } from "@/components/AboutModal";
+import { DatasetGalleryModal } from "@/components/DatasetGalleryModal";
 import { formatSQL } from "@/lib/sqlFormatter";
 import { api } from "@/lib/api";
 import { Table, BarChart3, Loader2, Folder, Plus, Layers } from "lucide-react";
@@ -82,6 +83,7 @@ export default function Home() {
   const [showSnippetsDrawer, setShowSnippetsDrawer] = useState(false);
   const [showDiagramModal, setShowDiagramModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showDatasetGallery, setShowDatasetGallery] = useState(false);
   const [inspectTableName, setInspectTableName] = useState<string | null>(null);
   const [saveTitlePrompt, setSaveTitlePrompt] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
@@ -106,6 +108,18 @@ export default function Home() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      if (themeMode === "dark") {
+        document.documentElement.classList.add("dark", "theme-dark");
+        document.documentElement.classList.remove("theme-winxp");
+      } else {
+        document.documentElement.classList.remove("dark", "theme-dark");
+        document.documentElement.classList.add("theme-winxp");
+      }
+    }
+  }, [themeMode]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -359,14 +373,16 @@ export default function Home() {
 
       await api.createSavedQuery({
         workspace_id: currentWorkspace.id,
-        title: saveTitle,
+        title: saveTitle.trim(),
         query_text: sqlQuery,
+        tags: tagList,
         tags_json: JSON.stringify(tagList),
+        category: tagList[0] || undefined,
       });
       setSaveTitlePrompt(false);
       setSaveTitle("");
       setSaveTags("");
-      alert(language === "id" ? "Query berhasil disimpan ke perpustakaan dengan tag!" : "Query successfully saved to library with tags!");
+      alert(language === "id" ? "Query berhasil disimpan ke perpustakaan dengan tag / kategori!" : "Query successfully saved to library with tags / category!");
     } catch (e: any) {
       alert(language === "id" ? `Gagal menyimpan: ${e.message}` : `Failed to save: ${e.message}`);
     }
@@ -409,7 +425,7 @@ export default function Home() {
 
   const handlePreviewTable = async (datasetId: string, tableName: string) => {
     try {
-      const res = await api.getDatasetPreview(datasetId);
+      const res = await api.getDatasetPreview(datasetId, tableName);
       setQueryResult({
         columns: res.columns || [],
         rows: res.rows || [],
@@ -449,7 +465,7 @@ export default function Home() {
   return (
     <div
       className={`h-screen w-screen flex flex-col overflow-hidden select-none ${
-        themeMode === "winxp" ? "theme-winxp" : "theme-dark"
+        themeMode === "winxp" ? "theme-winxp" : "theme-dark dark"
       }`}
       style={{ backgroundColor: "var(--win-desktop)" }}
     >
@@ -458,8 +474,6 @@ export default function Home() {
         user={user}
         workspaces={workspaces}
         currentWorkspace={currentWorkspace}
-        themeMode={themeMode}
-        onToggleTheme={handleToggleTheme}
         onSelectWorkspace={handleSelectWorkspace}
         onOpenUpload={() => setShowUploadModal(true)}
         onOpenChallenges={() => setShowChallengeDrawer(true)}
@@ -471,6 +485,7 @@ export default function Home() {
         onOpenSnippets={() => setShowSnippetsDrawer(true)}
         onOpenDiagram={() => setShowDiagramModal(true)}
         onOpenAbout={() => setShowAboutModal(true)}
+        onOpenDatasetGallery={() => setShowDatasetGallery(true)}
         onLogout={handleLogout}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         isSidebarOpen={isSidebarOpen}
@@ -547,6 +562,7 @@ export default function Home() {
             onInspectTable={(tbl) => setInspectTableName(tbl)}
             onDeleteDataset={handleDeleteDataset}
             onOpenUpload={() => setShowUploadModal(true)}
+            onOpenDatasetGallery={() => setShowDatasetGallery(true)}
           />
         </div>
 
@@ -554,7 +570,7 @@ export default function Home() {
         {isSidebarOpen && (
           <div
             onClick={() => setIsSidebarOpen(false)}
-            className="md:hidden fixed inset-0 z-10 bg-black/60 backdrop-blur-sm"
+            className="md:hidden fixed inset-0 z-10 bg-black/40 backdrop-blur-[0.5px] animate-fadeIn"
           />
         )}
 
@@ -730,7 +746,7 @@ export default function Home() {
 
       {/* Save Query Prompt Modal with Tags */}
       {saveTitlePrompt && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 select-none">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[0.5px] animate-fadeIn flex items-center justify-center p-4 select-none">
           <div className="win-window w-full max-w-sm p-0 shadow-2xl bg-[var(--win-surface)] text-[var(--win-text)]">
             <div className="win-titlebar">
               <span>{t.savePrompt.title}</span>
@@ -762,17 +778,43 @@ export default function Home() {
                   onChange={(e) => setSaveTags(e.target.value)}
                   className="win-inset w-full p-1.5 text-xs text-[var(--win-text)] font-mono focus:outline-none"
                 />
-                <div className="flex gap-1 pt-1 overflow-x-auto text-[10px]">
-                  {["#reporting", "#kpi", "#analytics", "#etl"].map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => setSaveTags((prev) => prev ? `${prev}, ${tag}` : tag)}
-                      className="win-btn text-[10px] !px-1.5 !py-0.5"
-                    >
-                      {tag}
-                    </button>
-                  ))}
+                <div className="flex flex-wrap gap-1 pt-1 text-[10px]">
+                  {["#reporting", "#kpi", "#analytics", "#etl", "#finance", "#sales"].map((tag) => {
+                    const cleanTag = tag.replace(/^#/, "").toLowerCase();
+                    const currentTags = saveTags
+                      .split(",")
+                      .map((s) => s.trim().replace(/^#/, "").toLowerCase())
+                      .filter(Boolean);
+                    const isSelected = currentTags.includes(cleanTag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          const current = saveTags
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean);
+                          const existsIdx = current.findIndex(
+                            (s) => s.replace(/^#/, "").toLowerCase() === cleanTag
+                          );
+                          if (existsIdx >= 0) {
+                            current.splice(existsIdx, 1);
+                          } else {
+                            current.push(tag);
+                          }
+                          setSaveTags(current.join(", "));
+                        }}
+                        className={`win-btn text-[10px] !px-2 !py-0.5 transition cursor-pointer select-none ${
+                          isSelected
+                            ? "win-inset font-bold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 border border-blue-500"
+                            : ""
+                        }`}
+                      >
+                        {tag} {isSelected ? "✓" : ""}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2 border-t border-[var(--win-border-dark)]">
@@ -858,11 +900,12 @@ export default function Home() {
           setShowWorkspaceModal(false);
         }}
         onWorkspacesChanged={(wsList, newActiveWs) => {
-          setWorkspaces(wsList);
-          if (newActiveWs) {
+          const validList = (wsList || []).filter(Boolean);
+          setWorkspaces(validList);
+          if (newActiveWs && newActiveWs.id) {
             handleSelectWorkspace(newActiveWs);
-          } else if (!wsList.some((w) => w.id === currentWorkspace?.id) && wsList.length > 0) {
-            handleSelectWorkspace(wsList[0]);
+          } else if (!validList.some((w) => w?.id === currentWorkspace?.id) && validList.length > 0) {
+            handleSelectWorkspace(validList[0]);
           }
         }}
       />
@@ -923,6 +966,7 @@ export default function Home() {
         onClose={() => setShowDiagramModal(false)}
         workspaceId={currentWorkspace?.id || ""}
         onSelectTable={(tbl) => setSqlQuery(`SELECT * FROM "${tbl}" LIMIT 50;`)}
+        onSelectQuery={(query) => setSqlQuery(query)}
       />
 
       <QueryDiffModal
@@ -944,6 +988,28 @@ export default function Home() {
       <AboutModal
         isOpen={showAboutModal}
         onClose={() => setShowAboutModal(false)}
+      />
+
+      <DatasetGalleryModal
+        isOpen={showDatasetGallery}
+        onClose={() => setShowDatasetGallery(false)}
+        workspaceCount={workspaces.length}
+        onWorkspaceCreated={async (newWsId, sampleQuery) => {
+          try {
+            const wsRes = await api.listWorkspaces();
+            const wsList = (wsRes.workspaces || []).filter(Boolean);
+            setWorkspaces(wsList);
+            const targetWs = wsList.find((w: any) => w.id === newWsId) || wsList[0];
+            if (targetWs) {
+              handleSelectWorkspace(targetWs);
+            }
+            if (sampleQuery) {
+              setSqlQuery(sampleQuery);
+            }
+          } catch (err) {
+            console.error("Failed to select template workspace", err);
+          }
+        }}
       />
 
       {showAuthModal && <AuthModal onSuccess={handleAuthSuccess} />}
