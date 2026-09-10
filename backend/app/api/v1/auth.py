@@ -91,14 +91,13 @@ async def register(
     # Generate token
     token = create_access_token({"sub": user.id})
 
-    is_prod = settings.ENVIRONMENT == "production"
     response.set_cookie(
         key=settings.COOKIE_NAME,
         value=token,
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
-        secure=is_prod,
+        samesite="none",
+        secure=True,
     )
 
     data = {
@@ -132,14 +131,13 @@ async def login(
 
     token = create_access_token({"sub": user.id})
 
-    is_prod = settings.ENVIRONMENT == "production"
     response.set_cookie(
         key=settings.COOKIE_NAME,
         value=token,
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
-        secure=is_prod,
+        samesite="none",
+        secure=True,
     )
 
     ws_query = select(Workspace).where(Workspace.owner_id == user.id)
