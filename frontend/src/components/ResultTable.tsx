@@ -269,42 +269,54 @@ function ResultTableComponent({
             </tr>
           </thead>
           <tbody className="text-[11px] divide-y divide-[var(--win-border-medium)]">
-            {rows.map((row, rIdx) => (
-              <tr key={rIdx} className="hover:bg-blue-50/50">
-                <td className="p-1 text-center font-bold text-[var(--win-text-muted)] border-r border-[var(--win-border-medium)] select-none bg-[var(--win-surface)]">
-                  {rIdx + 1}
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + 1} className="p-8 text-center text-[var(--win-text-muted)]">
+                  <div className="flex flex-col items-center gap-2">
+                    <TableIcon size={28} className="opacity-30" />
+                    <p className="text-xs font-bold">{language === "id" ? "Query berhasil, tapi tidak ada baris data" : "Query succeeded, but returned no rows"}</p>
+                    <p className="text-[10px]">{language === "id" ? "Coba ubah filter WHERE atau periksa data tabel" : "Try adjusting WHERE filters or check table data"}</p>
+                  </div>
                 </td>
-                {row.map((val, cIdx) => {
-                  const cellId = `${rIdx}-${cIdx}`;
-                  const isCopied = copiedCell === cellId;
-                  return (
-                    <td
-                      key={cIdx}
-                      onClick={() => {
-                        const sel = typeof window !== "undefined" ? window.getSelection()?.toString() : "";
-                        if (sel && sel.trim().length > 0) return;
-                        copyToClipboard(val === null ? "NULL" : String(val), cellId);
-                      }}
-                      title="Click or drag to select/copy"
-                      className="p-1.5 px-2.5 border-r border-[var(--win-border-medium)] max-w-xs truncate cursor-pointer hover:bg-blue-100/60 relative group select-text text-[var(--win-text)]"
-                    >
-                      {val === null ? (
-                        <span className="px-1 py-0.2 text-[9px] font-bold bg-[var(--win-surface-alt)] text-[var(--win-text-muted)] border border-[var(--win-border-dark)]">
-                          NULL
-                        </span>
-                      ) : (
-                        <span>{String(val)}</span>
-                      )}
-                      {isCopied && (
-                        <span className="absolute right-1 top-0.5 text-[9px] text-white bg-[#0055ea] px-1 shadow font-sans font-bold">
-                          {t.results.copied}
-                        </span>
-                      )}
-                    </td>
-                  );
-                })}
               </tr>
-            ))}
+            ) : (
+              rows.map((row, rIdx) => (
+                <tr key={rIdx} className="hover:bg-blue-50/50">
+                  <td className="p-1 text-center font-bold text-[var(--win-text-muted)] border-r border-[var(--win-border-medium)] select-none bg-[var(--win-surface)]">
+                    {rIdx + 1}
+                  </td>
+                  {row.map((val, cIdx) => {
+                    const cellId = `${rIdx}-${cIdx}`;
+                    const isCopied = copiedCell === cellId;
+                    return (
+                      <td
+                        key={cIdx}
+                        onClick={() => {
+                          const sel = typeof window !== "undefined" ? window.getSelection()?.toString() : "";
+                          if (sel && sel.trim().length > 0) return;
+                          copyToClipboard(val === null ? "NULL" : String(val), cellId);
+                        }}
+                        title="Click or drag to select/copy"
+                        className="p-1.5 px-2.5 border-r border-[var(--win-border-medium)] max-w-xs truncate cursor-pointer hover:bg-blue-100/60 relative group select-text text-[var(--win-text)]"
+                      >
+                        {val === null ? (
+                          <span className="px-1 py-0.2 text-[9px] font-bold bg-[var(--win-surface-alt)] text-[var(--win-text-muted)] border border-[var(--win-border-dark)]">
+                            NULL
+                          </span>
+                        ) : (
+                          <span>{String(val)}</span>
+                        )}
+                        {isCopied && (
+                          <span className="absolute right-1 top-0.5 text-[9px] text-white bg-[#0055ea] px-1 shadow font-sans font-bold">
+                            {t.results.copied}
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

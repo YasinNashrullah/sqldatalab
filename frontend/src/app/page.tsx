@@ -38,6 +38,7 @@ export default function Home() {
 
   // Workspace & Datasets
   const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [maxWorkspaces, setMaxWorkspaces] = useState<number>(3);
   const [currentWorkspace, setCurrentWorkspace] = useState<any | null>(null);
   const [datasets, setDatasets] = useState<any[]>([]);
   const [isDatasetsLoading, setIsDatasetsLoading] = useState(false);
@@ -199,12 +200,16 @@ export default function Home() {
       const data = await api.getMe();
       setUser(data.user);
       setWorkspaces(data.workspaces || []);
+      setMaxWorkspaces(data.max_workspaces || 3);
       if (data.workspaces && data.workspaces.length > 0) {
         setCurrentWorkspace(data.workspaces[0]);
         loadDatasets(data.workspaces[0].id);
       }
+      setShowAuthModal(false);
     } catch {
       setUser(null);
+      setWorkspaces([]);
+      setCurrentWorkspace(null);
       setShowAuthModal(true);
     } finally {
       setIsAuthLoading(false);
@@ -221,6 +226,7 @@ export default function Home() {
     try {
       const res = await api.listWorkspaces();
       setWorkspaces(res.workspaces || []);
+      setMaxWorkspaces(res.max_workspaces || 3);
       if (res.workspaces.length > 0) {
         const target = preferWsId
           ? res.workspaces.find((w) => w.id === preferWsId) || res.workspaces[0]
@@ -228,8 +234,8 @@ export default function Home() {
         setCurrentWorkspace(target);
         loadDatasets(target.id);
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
+      // Workspace load failed silently; user can retry
     }
   };
 
@@ -239,7 +245,7 @@ export default function Home() {
       const res = await api.listDatasets(wsId);
       setDatasets(res.datasets || []);
     } catch (e) {
-      console.error(e);
+      setDatasets([]);
     } finally {
       setIsDatasetsLoading(false);
     }
@@ -260,11 +266,13 @@ export default function Home() {
   const handleLogout = async () => {
     try {
       await api.logout();
-    } catch (e) {
-      console.error(e);
+    } catch {
+      // Logout API call failed; continue clearing local state anyway
     }
     setUser(null);
+    setWorkspaces([]);
     setCurrentWorkspace(null);
+    setDatasets([]);
     setShowAuthModal(true);
   };
 
@@ -357,8 +365,8 @@ export default function Home() {
       try {
         const res = await api.formatSQL(sqlQuery);
         setSqlQuery(res.formatted_query);
-      } catch (e) {
-        console.error(e);
+      } catch {
+        // Format API also unavailable; leave query unchanged
       }
     }
   };
@@ -532,7 +540,7 @@ export default function Home() {
             title={language === "id" ? "Kelola & Tambah Workspace" : "Manage & Add Workspaces"}
           >
             <Plus size={11} />
-            <span>{language === "id" ? "Kelola Workspace" : "Manage Workspaces"} ({workspaces.length}/3)</span>
+            <span>{language === "id" ? "Kelola Workspace" : "Manage Workspaces"} ({workspaces.length}/{maxWorkspaces})</span>
           </button>
         </div>
 
@@ -894,6 +902,7 @@ export default function Home() {
         isOpen={showWorkspaceModal}
         onClose={() => setShowWorkspaceModal(false)}
         workspaces={workspaces}
+        maxWorkspaces={maxWorkspaces}
         currentWorkspace={currentWorkspace}
         onSelectWorkspace={(ws) => {
           handleSelectWorkspace(ws);
@@ -1006,13 +1015,18 @@ export default function Home() {
             if (sampleQuery) {
               setSqlQuery(sampleQuery);
             }
-          } catch (err) {
-            console.error("Failed to select template workspace", err);
+          } catch {
+            // Template workspace switch failed; user can retry manually
           }
         }}
       />
 
-      {showAuthModal && <AuthModal onSuccess={handleAuthSuccess} />}
+      {showAuthModal && !user && (
+        <AuthModal 
+          onSuccess={handleAuthSuccess}
+          onClose={() => setShowAuthModal(false)}
+        />
+      )}
     </div>
   );
 }

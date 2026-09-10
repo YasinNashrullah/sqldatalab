@@ -17,9 +17,10 @@ import { useLanguage } from "@/lib/i18n";
 
 interface AuthModalProps {
   onSuccess: (user: any, defaultWorkspaceId: string) => void;
+  onClose?: () => void;
 }
 
-export function AuthModal({ onSuccess }: AuthModalProps) {
+export function AuthModal({ onSuccess, onClose }: AuthModalProps) {
   const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
@@ -85,6 +86,9 @@ export function AuthModal({ onSuccess }: AuthModalProps) {
             <Database size={14} className="text-amber-300" />
             <span className="font-bold">{t.authModal.title}</span>
           </div>
+          {onClose && (
+            <button onClick={onClose} className="win-control-btn win-close">✕</button>
+          )}
         </div>
 
         {/* Dialog Header Banner */}

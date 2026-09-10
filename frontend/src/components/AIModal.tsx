@@ -44,7 +44,7 @@ export function AIModal({
     setResultText(null);
     setSuggestedSQL(null);
     try {
-      const res = await api.aiExplainQuery({
+      const res = await api.explainQuery({
         query: query,
         schema_context: schemaContext,
       });
@@ -66,7 +66,7 @@ export function AIModal({
     setResultText(null);
     setSuggestedSQL(null);
     try {
-      const res = await api.aiFixQuery({
+      const res = await api.explainError({
         query: query,
         error_message: errorMessage || "Query syntax or execution error",
         schema_context: schemaContext,
@@ -90,7 +90,7 @@ export function AIModal({
     setResultText(null);
     setSuggestedSQL(null);
     try {
-      const res = await api.aiGenerateQuery({
+      const res = await api.generateSQL({
         prompt: promptText,
         schema_context: schemaContext,
       });

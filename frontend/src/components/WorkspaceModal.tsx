@@ -9,6 +9,7 @@ interface WorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;
   workspaces: any[];
+  maxWorkspaces?: number;
   currentWorkspace: any;
   onSelectWorkspace?: (ws: any) => void;
   onWorkspaceCreated?: (ws: any) => void;
@@ -21,6 +22,7 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   isOpen,
   onClose,
   workspaces,
+  maxWorkspaces = 3,
   currentWorkspace,
   onSelectWorkspace,
   onWorkspaceCreated,
@@ -43,7 +45,7 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
 
   if (!isOpen) return null;
 
-  const isQuotaFull = workspaces.length >= 3;
+  const isQuotaFull = workspaces.length >= maxWorkspaces;
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,13 +133,13 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
         <div className="win-status-bar px-2 py-1 justify-between text-xs border-b border-[var(--win-border-dark)]">
           <span>
             {language === "id"
-              ? `Kapasitas: ${workspaces.length}/3 Workspace`
-              : `Capacity: ${workspaces.length}/3 Workspaces`}
+              ? `Kapasitas: ${workspaces.length}/${maxWorkspaces} Workspace`
+              : `Capacity: ${workspaces.length}/${maxWorkspaces} Workspaces`}
           </span>
           <span className={`font-bold ${isQuotaFull ? "text-amber-700" : "text-emerald-700"}`}>
             {isQuotaFull 
-              ? (language === "id" ? "Batas Tercapai (3/3)" : "Quota Reached (3/3)") 
-              : (language === "id" ? `${3 - workspaces.length} Slot Tersedia` : `${3 - workspaces.length} Slots Available`)}
+              ? (language === "id" ? `Batas Tercapai (${maxWorkspaces}/${maxWorkspaces})` : `Quota Reached (${maxWorkspaces}/${maxWorkspaces})`) 
+              : (language === "id" ? `${maxWorkspaces - workspaces.length} Slot Tersedia` : `${maxWorkspaces - workspaces.length} Slots Available`)}
           </span>
         </div>
 

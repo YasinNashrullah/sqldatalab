@@ -47,8 +47,8 @@ export function HistoryDrawer({
       const res = await api.getQueryHistory(workspaceId, search, statusFilter);
       setHistory(res.history || []);
       if (res.retention_max) setRetentionMax(res.retention_max);
-    } catch (e) {
-      console.error("Failed to load history:", e);
+    } catch {
+      // History load failed; drawer shows empty state
     } finally {
       setIsLoading(false);
     }
@@ -67,8 +67,7 @@ export function HistoryDrawer({
     setSelectedForDiff((prev) => prev.filter((item) => item !== id));
     try {
       await api.deleteQueryHistory(id);
-    } catch (e) {
-      console.error(e);
+    } catch {
       setHistory(prevHistory);
     }
   };
@@ -83,7 +82,6 @@ export function HistoryDrawer({
       setTimeout(() => setActionMessage(null), 3000);
       await loadHistory();
     } catch (e: any) {
-      console.error("Cleanup error:", e);
       alert(e.message || "Gagal membersihkan riwayat");
     } finally {
       setIsLoading(false);

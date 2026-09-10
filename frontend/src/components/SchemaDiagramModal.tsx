@@ -44,7 +44,6 @@ export function SchemaDiagramModal({
       const res = await api.getSchemaGraph(workspaceId);
       setGraphData(res);
     } catch (err: any) {
-      console.error("Failed to load schema graph:", err);
       setErrorMsg(language === "id" ? "Gagal memuat relasi skema database." : "Failed to load database schema relationships.");
     } finally {
       setLoading(false);

@@ -7,10 +7,13 @@ if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from backend.app.core.config import settings
+from backend.app.core.rate_limit import limiter
 from backend.app.core.logging import RequestIdMiddleware, logger
 from backend.app.core.errors import (
     AppException,
@@ -18,7 +21,7 @@ from backend.app.core.errors import (
     validation_exception_handler,
     generic_exception_handler,
 )
-from backend.app.models.base import init_db
+from backend.app.models.base import init_db, AsyncSessionLocal
 from backend.app.api.router import api_router
 
 
@@ -28,6 +31,18 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing SQL Data Lab metadata database...")
     await init_db()
     logger.info("Database initialized successfully.")
+
+    # Seed default challenges
+    logger.info("Seeding challenge library...")
+    try:
+        from backend.app.api.v1.challenges import seed_or_update_challenges
+
+        async with AsyncSessionLocal() as session:
+            await seed_or_update_challenges(session)
+        logger.info("Challenge library seeded successfully.")
+    except Exception as e:
+        logger.error(f"Failed to seed challenges: {e}")
+
     yield
     # Handle application shutdown
     logger.info("SQL Data Lab shutting down cleanly.")
@@ -42,6 +57,9 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
@@ -49,12 +67,23 @@ from starlette.responses import Response
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Adds OWASP security response headers to prevent MIME-sniffing, clickjacking, and data leakage."""
+
     async def dispatch(self, request: Request, call_next):
         response: Response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+        response.headers["Permissions-Policy"] = (
+            "geolocation=(), camera=(), microphone=()"
+        )
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self'; "
+            "style-src 'self'; "
+            "img-src 'self' data:; "
+            "font-src 'self'; "
+            "connect-src 'self';"
+        )
         return response
 
 

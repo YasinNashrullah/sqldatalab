@@ -37,19 +37,24 @@ async def seed():
                 full_name="Ahmad Fadillah (Senior Analyst)",
                 hashed_password=get_password_hash("Password123!"),
                 is_active=True,
+                is_demo=True,
             )
             db.add(user)
             await db.commit()
             print("Created user: analyst_pro (analyst@example.com / Password123!)")
         else:
-            # Update password hash to guarantee known password
             user.hashed_password = get_password_hash("Password123!")
             user.full_name = "Ahmad Fadillah (Senior Analyst)"
+            user.is_demo = True
             await db.commit()
             print("Updated user password: analyst_pro (Password123!)")
 
         # Check workspace
-        ws_query = select(Workspace).join(WorkspaceMember).where(WorkspaceMember.user_id == user.id)
+        ws_query = (
+            select(Workspace)
+            .join(WorkspaceMember)
+            .where(WorkspaceMember.user_id == user.id)
+        )
         ws_res = await db.execute(ws_query)
         workspace = ws_res.scalar_one_or_none()
 
@@ -101,7 +106,9 @@ async def seed():
             shutil.copyfile(src_path, dest_path)
 
             file_size = dest_path.stat().st_size
-            delimiter, has_header, cols_info, sample_rows = CSVSniffer.inspect_file(dest_path)
+            delimiter, has_header, cols_info, sample_rows = CSVSniffer.inspect_file(
+                dest_path
+            )
             table_name = src_path.stem
 
             # Register in DuckDB
@@ -139,7 +146,11 @@ async def seed():
             db.add(table)
 
             for idx, col in enumerate(duck_cols):
-                samples = [str(r[idx]) for r in sample_rows if idx < len(r) and r[idx] is not None][:3]
+                samples = [
+                    str(r[idx])
+                    for r in sample_rows
+                    if idx < len(r) and r[idx] is not None
+                ][:3]
                 col_rec = DatasetColumn(
                     id=str(uuid.uuid4()),
                     table_id=table_id,
@@ -152,7 +163,9 @@ async def seed():
                 db.add(col_rec)
 
             await db.commit()
-            print(f"Registered table '{table_name}' with {row_count} rows in workspace.")
+            print(
+                f"Registered table '{table_name}' with {row_count} rows in workspace."
+            )
 
         # Seed 1 saved query if empty
         sq_check = await db.execute(

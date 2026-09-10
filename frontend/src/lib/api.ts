@@ -43,20 +43,6 @@ export interface DatasetTemplate {
   sample_query: string;
 }
 
-export function getStoredToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("datalab_token");
-}
-
-export function setStoredToken(token: string | null): void {
-  if (typeof window === "undefined") return;
-  if (token) {
-    localStorage.setItem("datalab_token", token);
-  } else {
-    localStorage.removeItem("datalab_token");
-  }
-}
-
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -66,11 +52,6 @@ export async function apiRequest<T>(
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string> || {}),
   };
-
-  const storedToken = getStoredToken();
-  if (storedToken && !headers["Authorization"]) {
-    headers["Authorization"] = `Bearer ${storedToken}`;
-  }
 
   if (!(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
@@ -118,21 +99,12 @@ export async function apiRequest<T>(
 export const api = {
   // Auth & Profile
   register: async (data: any) => {
-    const res = await apiRequest<any>("/auth/register", { method: "POST", body: JSON.stringify(data) });
-    if (res && res.access_token) {
-      setStoredToken(res.access_token);
-    }
-    return res;
+    return await apiRequest<any>("/auth/register", { method: "POST", body: JSON.stringify(data) });
   },
   login: async (data: any) => {
-    const res = await apiRequest<any>("/auth/login", { method: "POST", body: JSON.stringify(data) });
-    if (res && res.access_token) {
-      setStoredToken(res.access_token);
-    }
-    return res;
+    return await apiRequest<any>("/auth/login", { method: "POST", body: JSON.stringify(data) });
   },
   logout: async () => {
-    setStoredToken(null);
     try {
       return await apiRequest<any>("/auth/logout", { method: "POST" });
     } catch {
@@ -284,7 +256,4 @@ export const api = {
   explainQuery: (data: any) => apiRequest<any>("/ai/explain-query", { method: "POST", body: JSON.stringify(data) }),
   explainError: (data: any) => apiRequest<any>("/ai/explain-error", { method: "POST", body: JSON.stringify(data) }),
   generateSQL: (data: any) => apiRequest<any>("/ai/generate-sql", { method: "POST", body: JSON.stringify(data) }),
-  aiExplainQuery: (data: any) => apiRequest<any>("/ai/explain-query", { method: "POST", body: JSON.stringify(data) }),
-  aiFixQuery: (data: any) => apiRequest<any>("/ai/explain-error", { method: "POST", body: JSON.stringify(data) }),
-  aiGenerateQuery: (data: any) => apiRequest<any>("/ai/generate-sql", { method: "POST", body: JSON.stringify(data) }),
 };

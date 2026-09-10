@@ -1,6 +1,9 @@
+import logging
 from typing import Any
 from backend.app.services.duckdb_manager import DuckDBManager
 from backend.app.core.errors import SQLSyntaxError
+
+logger = logging.getLogger("datalab.challenge")
 
 
 class ChallengeEvaluator:
@@ -50,18 +53,18 @@ class ChallengeEvaluator:
         try:
             sol_res = DuckDBManager.execute_query(workspace_id, solution_sql, limit=500)
         except Exception as se:
-            # Fallback if solution query has dataset differences
+            logger.error(f"Solution query failed for challenge validation: {se}")
             return {
-                "is_passed": True,
-                "message": "Query executed successfully! (Target benchmark verified)",
+                "is_passed": False,
+                "message": "Unable to validate solution. Please contact administrator.",
                 "execution_time_ms": user_res["execution_time_ms"],
                 "user_row_count": user_res["row_count"],
-                "expected_row_count": user_res["row_count"],
+                "expected_row_count": 0,
                 "user_columns": [c["name"] for c in user_res["columns"]],
-                "expected_columns": [c["name"] for c in user_res["columns"]],
+                "expected_columns": [],
                 "sample_user_rows": user_res["rows"][:5],
-                "sample_expected_rows": user_res["rows"][:5],
-                "diff_details": None,
+                "sample_expected_rows": [],
+                "diff_details": "Solution validation failed - this is a system issue, not your fault.",
             }
 
         user_cols = [c["name"].lower() for c in user_res["columns"]]

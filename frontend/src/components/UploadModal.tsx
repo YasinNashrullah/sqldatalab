@@ -99,7 +99,6 @@ export function UploadModal({ isOpen, workspaceId, onClose, onSuccess }: UploadM
       const res = await api.uploadDatasets(formData);
       setUploadResult(res);
       setSelectedFiles([]);
-      onSuccess();
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to upload datasets.");
     } finally {
@@ -107,9 +106,17 @@ export function UploadModal({ isOpen, workspaceId, onClose, onSuccess }: UploadM
     }
   };
 
+  const handleClose = () => {
+    if (uploadResult && uploadResult.total_successful > 0) {
+      onSuccess();
+    } else {
+      onClose();
+    }
+  };
+
   return (
     <div 
-      onClick={onClose}
+      onClick={handleClose}
       className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[0.5px] animate-fadeIn flex items-center justify-center p-3 select-none"
     >
       <div 
@@ -123,7 +130,7 @@ export function UploadModal({ isOpen, workspaceId, onClose, onSuccess }: UploadM
             <span className="font-bold">{t.uploadModal.title}</span>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="win-control-btn win-close"
             title={t.uploadModal.close}
           >
@@ -230,7 +237,7 @@ export function UploadModal({ isOpen, workspaceId, onClose, onSuccess }: UploadM
         {/* Dialog Footer Actions */}
         <div className="p-2 border-t border-[var(--win-border-dark)] bg-[var(--win-surface)] flex items-center justify-end gap-2">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="win-btn text-xs !px-3 !py-1"
           >
             {t.uploadModal.close}

@@ -184,9 +184,9 @@ export function DatabaseExplorerComponent({
                         setConfirmDeleteId(null);
                         onDeleteDataset(ds.id);
                       }}
-                      className="win-btn win-btn-primary text-[10px] !bg-rose-600 !border-rose-400 text-white"
+                      className="win-btn text-[10px] bg-rose-600 text-white font-bold"
                     >
-                      {t.sidebar.deleteConfirm}
+                      {language === "id" ? "Hapus?" : "Delete?"}
                     </button>
                     <button
                       onClick={(e) => {
@@ -205,9 +205,9 @@ export function DatabaseExplorerComponent({
                       setConfirmDeleteId(ds.id);
                     }}
                     title={language === "id" ? "Hapus Dataset" : "Delete Dataset"}
-                    className="win-btn text-rose-600 !p-0.5 !w-5 !h-5"
+                    className="win-btn !p-1 text-rose-600"
                   >
-                    <Trash2 size={11} />
+                    <Trash2 size={12} />
                   </button>
                 )}
               </div>

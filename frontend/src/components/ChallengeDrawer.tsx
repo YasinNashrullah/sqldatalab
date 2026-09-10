@@ -56,8 +56,8 @@ export function ChallengeDrawer({
         }
         return curr;
       });
-    } catch (err) {
-      console.error("Failed to load challenges:", err);
+    } catch {
+      // Challenge load failed; drawer shows empty state
     } finally {
       setIsLoading(false);
     }

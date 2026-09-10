@@ -19,26 +19,34 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     """Hash a password using bcrypt."""
     pw_bytes = password.encode("utf-8")[:72]
-    salt = bcrypt.gensalt()
+    salt = bcrypt.gensalt(rounds=14)
     return bcrypt.hashpw(pw_bytes, salt).decode("utf-8")
 
 
-def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    data: dict[str, Any], expires_delta: timedelta | None = None
+) -> str:
     """Create a signed JWT access token."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
     return encoded_jwt
 
 
 def decode_access_token(token: str) -> dict[str, Any]:
     """Decode and validate a JWT access token."""
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         return payload
     except jwt.ExpiredSignatureError:
         raise UnauthorizedError("Session has expired. Please log in again.")
@@ -53,9 +61,9 @@ def sanitize_identifier(name: str, fallback_prefix: str = "item") -> str:
     preventing path traversal and quote escape exploits.
     """
     import re
+
     cleaned = re.sub(r"[^a-zA-Z0-9_]", "_", name).strip("_").lower()
     cleaned = re.sub(r"_+", "_", cleaned)
     if not cleaned or not cleaned[0].isalpha():
         cleaned = f"{fallback_prefix}_{cleaned}" if cleaned else f"{fallback_prefix}_id"
     return cleaned[:63]
-

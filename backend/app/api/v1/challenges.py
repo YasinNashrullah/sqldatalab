@@ -28,7 +28,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "Use the WHERE clause with the country column.",
             "Text values in SQL are enclosed in single quotes: 'Indonesia'.",
-            "SELECT customer_id, name, city FROM customers WHERE country = 'Indonesia';"
+            "SELECT customer_id, name, city FROM customers WHERE country = 'Indonesia';",
         ],
         "ordinal_rank": 1,
         "points_xp": 50,
@@ -45,7 +45,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "The % symbol matches zero or more characters.",
             "'A%' matches any string starting with 'A'.",
-            "'%ang' matches any string ending with 'ang'."
+            "'%ang' matches any string ending with 'ang'.",
         ],
         "ordinal_rank": 2,
         "points_xp": 50,
@@ -61,7 +61,7 @@ DEFAULT_CHALLENGES = [
         "solution_sql": "SELECT order_id, category, amount FROM orders ORDER BY amount DESC LIMIT 3;",
         "hints": [
             "Use ORDER BY amount DESC to put the largest numbers first.",
-            "Use LIMIT 3 to only return the top 3 rows."
+            "Use LIMIT 3 to only return the top 3 rows.",
         ],
         "ordinal_rank": 3,
         "points_xp": 75,
@@ -78,7 +78,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "COALESCE(val, fallback) returns the first non-null argument.",
             "Don't forget to alias the column as country_clean.",
-            "Order by customer_id."
+            "Order by customer_id.",
         ],
         "ordinal_rank": 4,
         "points_xp": 75,
@@ -95,7 +95,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "Use the SUM(amount) function and alias it with AS total_revenue.",
             "Group the results using GROUP BY category.",
-            "Add ORDER BY total_revenue DESC at the end."
+            "Add ORDER BY total_revenue DESC at the end.",
         ],
         "ordinal_rank": 5,
         "points_xp": 100,
@@ -112,7 +112,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "WHERE filters rows before grouping; HAVING filters aggregated groups.",
             "Use HAVING SUM(amount) > 200.",
-            "Alias SUM(amount) AS total_amount."
+            "Alias SUM(amount) AS total_amount.",
         ],
         "ordinal_rank": 6,
         "points_xp": 125,
@@ -129,7 +129,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "Use JOIN orders o ON c.customer_id = o.customer_id to connect both tables.",
             "Filter rows using WHERE o.amount > 100.",
-            "Sort descending with ORDER BY o.amount DESC."
+            "Sort descending with ORDER BY o.amount DESC.",
         ],
         "ordinal_rank": 7,
         "points_xp": 125,
@@ -146,7 +146,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "LEFT JOIN ensures customers without orders still appear with count 0.",
             "Use COUNT(o.order_id) instead of COUNT(*) so null joins return 0.",
-            "Group by c.name."
+            "Group by c.name.",
         ],
         "ordinal_rank": 8,
         "points_xp": 150,
@@ -163,7 +163,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "Window functions use the OVER clause: DENSE_RANK() OVER (...).",
             "Partition the window by category: PARTITION BY category.",
-            "Sort within each category partition: ORDER BY amount DESC."
+            "Sort within each category partition: ORDER BY amount DESC.",
         ],
         "ordinal_rank": 9,
         "points_xp": 200,
@@ -180,7 +180,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "Cumulative window sums do not need a PARTITION BY clause if summing over the entire table.",
             "Use SUM(amount) OVER (ORDER BY order_date, order_id).",
-            "Alias as running_revenue."
+            "Alias as running_revenue.",
         ],
         "ordinal_rank": 10,
         "points_xp": 225,
@@ -197,7 +197,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "Start with: WITH customer_spending AS ( ... ).",
             "Inside the CTE, join customers and orders, grouping by name.",
-            "Outside the CTE, filter with WHERE total_spent > 500."
+            "Outside the CTE, filter with WHERE total_spent > 500.",
         ],
         "ordinal_rank": 11,
         "points_xp": 250,
@@ -214,7 +214,7 @@ DEFAULT_CHALLENGES = [
         "hints": [
             "CASE statements evaluate sequentially from top to bottom.",
             "Use WHEN amount >= 500 THEN 'High Value'.",
-            "Alias the resulting column with AS value_tier."
+            "Alias the resulting column with AS value_tier.",
         ],
         "ordinal_rank": 12,
         "points_xp": 300,
@@ -319,7 +319,6 @@ async def list_challenges(
     db: AsyncSession = Depends(get_db),
 ):
     req_id = getattr(request.state, "request_id", "req_chal")
-    await seed_or_update_challenges(db)
 
     query = select(Challenge).order_by(Challenge.ordinal_rank)
     if difficulty and difficulty.lower() != "all":
@@ -349,30 +348,35 @@ async def list_challenges(
         if is_done:
             earned_xp += points
 
-        items.append({
-            "id": c.id,
-            "title": c.title,
-            "slug": c.slug,
-            "difficulty": c.difficulty,
-            "category": c.category,
-            "description": c.description,
-            "target_dataset_slug": c.target_dataset_slug,
-            "starter_sql": c.starter_sql,
-            "hints": hints,
-            "ordinal_rank": c.ordinal_rank,
-            "points_xp": points,
-            "is_completed": is_done,
-        })
+        items.append(
+            {
+                "id": c.id,
+                "title": c.title,
+                "slug": c.slug,
+                "difficulty": c.difficulty,
+                "category": c.category,
+                "description": c.description,
+                "target_dataset_slug": c.target_dataset_slug,
+                "starter_sql": c.starter_sql,
+                "hints": hints,
+                "ordinal_rank": c.ordinal_rank,
+                "points_xp": points,
+                "is_completed": is_done,
+            }
+        )
 
-    return success_envelope({
-        "challenges": items,
-        "stats": {
-            "total": len(items),
-            "completed": len([i for i in items if i["is_completed"]]),
-            "earned_xp": earned_xp,
-            "total_xp": total_xp,
-        }
-    }, req_id)
+    return success_envelope(
+        {
+            "challenges": items,
+            "stats": {
+                "total": len(items),
+                "completed": len([i for i in items if i["is_completed"]]),
+                "earned_xp": earned_xp,
+                "total_xp": total_xp,
+            },
+        },
+        req_id,
+    )
 
 
 @router.get("/{id}")

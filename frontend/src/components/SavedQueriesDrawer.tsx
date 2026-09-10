@@ -50,8 +50,8 @@ export function SavedQueriesDrawer({
     try {
       const res = await api.getSavedQueries(workspaceId);
       setQueries(res?.saved_queries || []);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      // Saved queries load failed silently
     }
   };
 
@@ -60,8 +60,7 @@ export function SavedQueriesDrawer({
     setQueries((prev) => prev.filter((q) => q.id !== id));
     try {
       await api.deleteSavedQuery(id);
-    } catch (e) {
-      console.error(e);
+    } catch {
       setQueries(prevQueries);
     }
   };

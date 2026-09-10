@@ -2,6 +2,7 @@ from typing import Any
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from backend.app.core.config import settings
 import logging
 
 logger = logging.getLogger("datalab.errors")
@@ -97,7 +98,11 @@ class SQLSyntaxError(AppException):
 
 
 class SQLTimeoutError(AppException):
-    def __init__(self, message: str = "Query exceeded maximum execution time.", details: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        message: str = "Query exceeded maximum execution time.",
+        details: dict[str, Any] | None = None,
+    ):
         super().__init__(
             code="SQL_EXECUTION_TIMEOUT",
             message=message,
@@ -107,7 +112,11 @@ class SQLTimeoutError(AppException):
 
 
 class SQLResourceLimitError(AppException):
-    def __init__(self, message: str = "Query exceeded memory or resource limits.", details: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        message: str = "Query exceeded memory or resource limits.",
+        details: dict[str, Any] | None = None,
+    ):
         super().__init__(
             code="SQL_RESOURCE_LIMIT",
             message=message,
@@ -117,7 +126,11 @@ class SQLResourceLimitError(AppException):
 
 
 class AIServiceUnavailableError(AppException):
-    def __init__(self, message: str = "AI Assistant service is currently unavailable.", details: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        message: str = "AI Assistant service is currently unavailable.",
+        details: dict[str, Any] | None = None,
+    ):
         super().__init__(
             code="AI_SERVICE_UNAVAILABLE",
             message=message,
@@ -156,7 +169,9 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
     )
 
 
-async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     request_id = getattr(request.state, "request_id", "req_unknown")
     errors = exc.errors()
     formatted_errors = []
@@ -165,7 +180,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         formatted_errors.append({"field": loc, "msg": err.get("msg", "")})
 
     logger.warning(f"[{request_id}] Validation error: {formatted_errors}")
-    summary_msg = "; ".join(f"{e['field'].split(' -> ')[-1]}: {e['msg']}" for e in formatted_errors) if formatted_errors else "Request validation failed."
+    summary_msg = (
+        "; ".join(
+            f"{e['field'].split(' -> ')[-1]}: {e['msg']}" for e in formatted_errors
+        )
+        if formatted_errors
+        else "Request validation failed."
+    )
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         headers=_cors_headers(request),
@@ -184,16 +205,31 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     request_id = getattr(request.state, "request_id", "req_unknown")
     logger.error(f"[{request_id}] Unhandled error: {exc}", exc_info=True)
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        headers=_cors_headers(request),
-        content={
-            "success": False,
-            "error": {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "An unexpected error occurred. Please try again.",
-                "request_id": request_id,
-                "details": {"error_class": exc.__class__.__name__},
+
+    if settings.ENVIRONMENT == "production":
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            headers=_cors_headers(request),
+            content={
+                "success": False,
+                "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "An unexpected error occurred. Please try again later.",
+                    "request_id": request_id,
+                },
             },
-        },
-    )
+        )
+    else:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            headers=_cors_headers(request),
+            content={
+                "success": False,
+                "error": {
+                    "code": "INTERNAL_SERVER_ERROR",
+                    "message": "An unexpected error occurred. Please try again.",
+                    "request_id": request_id,
+                    "details": {"error_class": exc.__class__.__name__},
+                },
+            },
+        )

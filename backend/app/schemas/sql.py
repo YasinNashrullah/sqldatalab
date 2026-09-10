@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 class SQLExecuteRequest(BaseModel):
     workspace_id: str
-    query: str = Field(min_length=1)
+    query: str = Field(min_length=1, max_length=50000)
     limit: int = Field(default=1000, ge=1, le=5000)
 
 

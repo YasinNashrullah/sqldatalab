@@ -41,14 +41,13 @@ async def get_query_history(
     if status_filter and status_filter.upper() in ["SUCCESS", "ERROR"]:
         query = query.where(QueryHistory.status == status_filter.upper())
 
+    if search:
+        query = query.where(QueryHistory.query_text.ilike(f"%{search}%"))
+
     query = query.order_by(QueryHistory.executed_at.desc()).limit(limit)
 
     res = await db.execute(query)
     histories = res.scalars().all()
-
-    if search:
-        search_lower = search.lower()
-        histories = [h for h in histories if search_lower in h.query_text.lower()]
 
     items = [QueryHistoryResponse.model_validate(h).model_dump() for h in histories]
     return success_envelope({"history": items, "retention_max": 100}, req_id)
@@ -79,10 +78,13 @@ async def cleanup_history(
     deleted_count = result.rowcount
     await db.commit()
 
-    return success_envelope({
-        "message": f"{deleted_count} riwayat query berhasil dibersihkan.",
-        "deleted_count": deleted_count,
-    }, req_id)
+    return success_envelope(
+        {
+            "message": f"{deleted_count} riwayat query berhasil dibersihkan.",
+            "deleted_count": deleted_count,
+        },
+        req_id,
+    )
 
 
 @router.delete("/history/{id}")
@@ -93,7 +95,9 @@ async def delete_query_history(
     db: AsyncSession = Depends(get_db),
 ):
     req_id = getattr(request.state, "request_id", "req_del_hist")
-    query = select(QueryHistory).where(QueryHistory.id == id, QueryHistory.user_id == user.id)
+    query = select(QueryHistory).where(
+        QueryHistory.id == id, QueryHistory.user_id == user.id
+    )
     res = await db.execute(query)
     record = res.scalar_one_or_none()
 
@@ -117,10 +121,14 @@ async def get_saved_queries(
     req_id = getattr(request.state, "request_id", "req_saved")
     await verify_workspace_access(workspace_id=workspace_id, user=user, db=db)
 
-    query = select(SavedQuery).where(
-        SavedQuery.workspace_id == workspace_id,
-        SavedQuery.user_id == user.id,
-    ).order_by(SavedQuery.updated_at.desc())
+    query = (
+        select(SavedQuery)
+        .where(
+            SavedQuery.workspace_id == workspace_id,
+            SavedQuery.user_id == user.id,
+        )
+        .order_by(SavedQuery.updated_at.desc())
+    )
 
     res = await db.execute(query)
     saved = res.scalars().all()
@@ -132,7 +140,9 @@ async def get_saved_queries(
             try:
                 parsed = json.loads(s.tags_json)
                 if isinstance(parsed, list):
-                    tags = [str(x).strip().lstrip("#") for x in parsed if str(x).strip()]
+                    tags = [
+                        str(x).strip().lstrip("#") for x in parsed if str(x).strip()
+                    ]
             except Exception:
                 tags = []
 
@@ -150,17 +160,19 @@ async def get_saved_queries(
             ):
                 continue
 
-        items.append({
-            "id": s.id,
-            "workspace_id": s.workspace_id,
-            "user_id": s.user_id,
-            "title": s.title,
-            "description": s.description,
-            "query_text": s.query_text,
-            "tags": tags,
-            "created_at": s.created_at,
-            "updated_at": s.updated_at,
-        })
+        items.append(
+            {
+                "id": s.id,
+                "workspace_id": s.workspace_id,
+                "user_id": s.user_id,
+                "title": s.title,
+                "description": s.description,
+                "query_text": s.query_text,
+                "tags": tags,
+                "created_at": s.created_at,
+                "updated_at": s.updated_at,
+            }
+        )
 
     return success_envelope({"saved_queries": items}, req_id)
 
@@ -190,7 +202,9 @@ async def create_saved_query(
         raw_tags.append(payload.category)
 
     # Clean and deduplicate tags
-    clean_tags = list(dict.fromkeys([t.strip().lstrip("#") for t in raw_tags if t and t.strip()]))
+    clean_tags = list(
+        dict.fromkeys([t.strip().lstrip("#") for t in raw_tags if t and t.strip()])
+    )
 
     sq_id = str(uuid.uuid4())
     saved = SavedQuery(
@@ -242,7 +256,7 @@ async def update_saved_query(
         saved.description = payload.description
     if payload.query_text is not None:
         saved.query_text = payload.query_text
-    
+
     new_tags: list[str] | None = None
     if payload.tags is not None:
         new_tags = [t.strip().lstrip("#") for t in payload.tags if t.strip()]
@@ -250,7 +264,9 @@ async def update_saved_query(
         try:
             parsed = json.loads(payload.tags_json)
             if isinstance(parsed, list):
-                new_tags = [str(x).strip().lstrip("#") for x in parsed if str(x).strip()]
+                new_tags = [
+                    str(x).strip().lstrip("#") for x in parsed if str(x).strip()
+                ]
         except Exception:
             pass
     if payload.category is not None:

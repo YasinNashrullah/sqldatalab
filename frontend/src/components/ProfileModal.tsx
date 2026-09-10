@@ -69,7 +69,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         setEmail(res.user.email || "");
       }
     } catch (err: any) {
-      console.error(err);
       setErrorMsg(language === "id" ? "Gagal memuat data profil." : "Failed to load profile data.");
     } finally {
       setLoading(false);

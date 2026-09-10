@@ -7,18 +7,67 @@ from backend.app.core.errors import AppException, SQLSyntaxError
 from backend.app.models.base import get_db
 from backend.app.models.user import User
 from backend.app.models.query import QueryHistory
-from backend.app.schemas.sql import SQLExecuteRequest, SQLFormatRequest, SQLExplainRequest
+from backend.app.schemas.sql import (
+    SQLExecuteRequest,
+    SQLFormatRequest,
+    SQLExplainRequest,
+)
 from backend.app.schemas.base import success_envelope
 from backend.app.services.duckdb_manager import DuckDBManager
 from backend.app.api.deps import get_current_user, verify_workspace_access
 
+
+def _sanitize_error_message(error_msg: str) -> str:
+    """Sanitize error messages to prevent information disclosure"""
+    if not error_msg:
+        return "Query execution failed"
+
+    sanitized = re.sub(r'File ".*?"', 'File "[REDACTED]"', error_msg)
+    sanitized = re.sub(r"line \d+", "line [REDACTED]", sanitized)
+    sanitized = re.sub(r"/[\w/\-\.]+/", "[PATH]/", sanitized)
+    sanitized = re.sub(r"[A-Z]:\\[\w\\\-\.]+", "[PATH]", sanitized)
+
+    lines = sanitized.split("\n")
+    if len(lines) > 3:
+        sanitized = "\n".join(lines[:3]) + "\n[Additional details omitted for security]"
+
+    return sanitized[:500]
+
+
 COMMON_SQL_FUNCTIONS = [
-    "COUNT", "SUM", "AVG", "MIN", "MAX", "COALESCE", "ROUND", "CAST", "CONCAT",
-    "STRFTIME", "DATE_TRUNC", "ROW_NUMBER", "RANK", "DENSE_RANK", "LAG", "LEAD",
-    "NTILE", "NULLIF", "SUBSTRING", "LOWER", "UPPER", "TRIM", "ABS", "CEIL", "FLOOR",
-    "FIRST_VALUE", "LAST_VALUE", "EXTRACT", "POSITION"
+    "COUNT",
+    "SUM",
+    "AVG",
+    "MIN",
+    "MAX",
+    "COALESCE",
+    "ROUND",
+    "CAST",
+    "CONCAT",
+    "STRFTIME",
+    "DATE_TRUNC",
+    "ROW_NUMBER",
+    "RANK",
+    "DENSE_RANK",
+    "LAG",
+    "LEAD",
+    "NTILE",
+    "NULLIF",
+    "SUBSTRING",
+    "LOWER",
+    "UPPER",
+    "TRIM",
+    "ABS",
+    "CEIL",
+    "FLOOR",
+    "FIRST_VALUE",
+    "LAST_VALUE",
+    "EXTRACT",
+    "POSITION",
 ]
-FN_UPPERCASE_PATTERN = re.compile(rf"\b({'|'.join(COMMON_SQL_FUNCTIONS)})\s*\(", re.IGNORECASE)
+FN_UPPERCASE_PATTERN = re.compile(
+    rf"\b({'|'.join(COMMON_SQL_FUNCTIONS)})\s*\(", re.IGNORECASE
+)
 
 router = APIRouter(prefix="/sql", tags=["SQL Execution"])
 
@@ -46,7 +95,7 @@ async def execute_sql(
         )
     except Exception as e:
         status_str = "ERROR"
-        err_msg = str(e)
+        err_msg = _sanitize_error_message(str(e))
         # Record failed queries into history for learning
         history_record = QueryHistory(
             workspace_id=payload.workspace_id,
@@ -76,7 +125,9 @@ async def execute_sql(
     # Auto-Retention: keep maximum 100 queries per workspace to prevent history bloating
     try:
         count_res = await db.execute(
-            select(func.count(QueryHistory.id)).where(QueryHistory.workspace_id == payload.workspace_id)
+            select(func.count(QueryHistory.id)).where(
+                QueryHistory.workspace_id == payload.workspace_id
+            )
         )
         hist_count = count_res.scalar() or 0
         if hist_count >= 100:
@@ -89,7 +140,9 @@ async def execute_sql(
             )
             oldest_ids = [r[0] for r in oldest_ids_res.all()]
             if oldest_ids:
-                await db.execute(delete(QueryHistory).where(QueryHistory.id.in_(oldest_ids)))
+                await db.execute(
+                    delete(QueryHistory).where(QueryHistory.id.in_(oldest_ids))
+                )
     except Exception:
         pass
 
@@ -133,6 +186,7 @@ async def get_table_stats(
 async def format_sql(
     payload: SQLFormatRequest,
     request: Request,
+    user: User = Depends(get_current_user),
 ):
     req_id = getattr(request.state, "request_id", "req_fmt")
     raw_query = payload.query.strip()
@@ -153,7 +207,9 @@ async def format_sql(
 
     # Uppercase common built-in analytical and aggregate functions
     if kw_case == "upper":
-        formatted = FN_UPPERCASE_PATTERN.sub(lambda m: f"{m.group(1).upper()}(", formatted)
+        formatted = FN_UPPERCASE_PATTERN.sub(
+            lambda m: f"{m.group(1).upper()}(", formatted
+        )
 
     return success_envelope({"formatted_query": formatted.strip()}, req_id)
 
@@ -185,4 +241,3 @@ async def get_data_quality_profile(
 
     profile = DuckDBManager.get_data_quality_profile(workspace_id, table_name)
     return success_envelope(profile, req_id)
-

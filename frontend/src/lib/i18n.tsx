@@ -1071,7 +1071,7 @@ export const translations: Record<Language, Translations> = {
     },
     authModal: {
       title: "Masuk ke SQLDataLab",
-      loginTitle: "Logon ke SQLDataLab Studio",
+      loginTitle: "Login ke SQLDataLab Studio",
       registerTitle: "Daftar Akun Baru SQLDataLab",
       subtitle: "Platform analitik DuckDB in-memory berkecepatan tinggi.",
       username: "Nama Pengguna (Username):",
@@ -1623,7 +1623,7 @@ export const translations: Record<Language, Translations> = {
     },
     authModal: {
       title: "Sign in to SQLDataLab",
-      loginTitle: "Logon to SQLDataLab Studio",
+      loginTitle: "Login to SQLDataLab Studio",
       registerTitle: "Register New Account",
       subtitle: "High-performance in-memory DuckDB analytical workstation.",
       username: "Username:",
@@ -1676,7 +1676,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const LANGUAGE_STORAGE_KEY = "sqltrain_language";
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>("id");
+  const [language, setLanguageState] = useState<Language>("en");
 
   useEffect(() => {
     if (typeof window !== "undefined") {

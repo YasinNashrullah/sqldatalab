@@ -58,8 +58,8 @@ export const TableStatsModal: React.FC<TableStatsModalProps> = ({
       setQualityLoading(true);
       const res = await api.getDataQualityProfile(workspaceId, tableName);
       setQualityProfile(res);
-    } catch (err: any) {
-      console.error("Failed to load quality profile:", err);
+    } catch {
+      // Quality profile load failed silently; panel stays empty
     } finally {
       setQualityLoading(false);
     }

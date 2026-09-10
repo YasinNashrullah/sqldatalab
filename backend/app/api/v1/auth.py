@@ -3,7 +3,12 @@ from fastapi import APIRouter, Depends, Response, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func, case
 from backend.app.core.config import settings
-from backend.app.core.security import get_password_hash, verify_password, create_access_token
+from backend.app.core.rate_limit import limiter
+from backend.app.core.security import (
+    get_password_hash,
+    verify_password,
+    create_access_token,
+)
 from backend.app.core.errors import InvalidCredentialsError, AppException
 from backend.app.models.base import get_db
 from backend.app.models.user import User
@@ -24,6 +29,7 @@ from backend.app.api.deps import get_current_user
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
+@limiter.limit("3/minute")
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
     payload: UserRegister,
@@ -32,9 +38,11 @@ async def register(
     db: AsyncSession = Depends(get_db),
 ):
     req_id = getattr(request.state, "request_id", "req_auth")
-    
+
     # Check if username or email exists
-    exist_query = select(User).where(or_(User.email == payload.email, User.username == payload.username))
+    exist_query = select(User).where(
+        or_(User.email == payload.email, User.username == payload.username)
+    )
     existing = await db.execute(exist_query)
     if existing.scalar_one_or_none():
         raise AppException(
@@ -56,7 +64,9 @@ async def register(
 
     # Automatically create a default personal workspace for the new user
     ws_id = str(uuid.uuid4())
-    duckdb_file = str((settings.WORKSPACES_DIR / ws_id / "analytics.duckdb").resolve())
+    ws_dir = settings.WORKSPACES_DIR / ws_id
+    ws_dir.mkdir(parents=True, exist_ok=True)
+    duckdb_file = str((ws_dir / "analytics.duckdb").resolve())
     workspace = Workspace(
         id=ws_id,
         owner_id=user_id,
@@ -79,28 +89,26 @@ async def register(
     await db.refresh(user)
 
     # Generate token
-    token = create_access_token({"sub": user.id, "email": user.email, "username": user.username})
+    token = create_access_token({"sub": user.id})
 
-    # Set HTTP-Only Secure Cookie
     is_prod = settings.ENVIRONMENT == "production"
     response.set_cookie(
         key=settings.COOKIE_NAME,
         value=token,
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="none" if is_prod else "lax",
+        samesite="lax",
         secure=is_prod,
     )
 
     data = {
-        "access_token": token,
-        "token_type": "bearer",
         "user": UserResponse.model_validate(user).model_dump(),
         "default_workspace_id": ws_id,
     }
     return success_envelope(data, req_id)
 
 
+@limiter.limit("5/minute")
 @router.post("/login")
 async def login(
     payload: UserLogin,
@@ -109,9 +117,12 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     req_id = getattr(request.state, "request_id", "req_auth")
-    
+
     query = select(User).where(
-        or_(User.email == payload.username_or_email, User.username == payload.username_or_email)
+        or_(
+            User.email == payload.username_or_email,
+            User.username == payload.username_or_email,
+        )
     )
     res = await db.execute(query)
     user = res.scalar_one_or_none()
@@ -119,28 +130,24 @@ async def login(
     if not user or not verify_password(payload.password, user.hashed_password):
         raise InvalidCredentialsError()
 
-    token = create_access_token({"sub": user.id, "email": user.email, "username": user.username})
+    token = create_access_token({"sub": user.id})
 
-    # Set HTTP-Only Cookie
     is_prod = settings.ENVIRONMENT == "production"
     response.set_cookie(
         key=settings.COOKIE_NAME,
         value=token,
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="none" if is_prod else "lax",
+        samesite="lax",
         secure=is_prod,
     )
 
-    # Fetch user's workspaces
     ws_query = select(Workspace).where(Workspace.owner_id == user.id)
     ws_res = await db.execute(ws_query)
     workspaces = ws_res.scalars().all()
     default_ws_id = workspaces[0].id if workspaces else None
 
     data = {
-        "access_token": token,
-        "token_type": "bearer",
         "user": UserResponse.model_validate(user).model_dump(),
         "default_workspace_id": default_ws_id,
     }
@@ -161,7 +168,7 @@ async def get_me(
     db: AsyncSession = Depends(get_db),
 ):
     req_id = getattr(request.state, "request_id", "req_auth")
-    
+
     # Get user's workspaces
     ws_query = select(Workspace).where(Workspace.owner_id == user.id)
     ws_res = await db.execute(ws_query)
@@ -175,6 +182,7 @@ async def get_me(
     data = {
         "user": UserResponse.model_validate(user).model_dump(),
         "workspaces": ws_data,
+        "max_workspaces": 1 if user.is_demo else 3,
     }
     return success_envelope(data, req_id)
 
@@ -191,8 +199,12 @@ async def get_profile(
     hist_stats = await db.execute(
         select(
             func.count(QueryHistory.id).label("total"),
-            func.sum(case((QueryHistory.status == "SUCCESS", 1), else_=0)).label("success"),
-            func.sum(case((QueryHistory.status == "ERROR", 1), else_=0)).label("errors"),
+            func.sum(case((QueryHistory.status == "SUCCESS", 1), else_=0)).label(
+                "success"
+            ),
+            func.sum(case((QueryHistory.status == "ERROR", 1), else_=0)).label(
+                "errors"
+            ),
             func.avg(QueryHistory.duration_ms).label("avg_duration"),
             func.sum(QueryHistory.row_count).label("total_rows"),
         ).where(QueryHistory.user_id == user.id)
@@ -203,7 +215,11 @@ async def get_profile(
     failed_queries = h_row.errors or 0 if h_row else 0
     avg_duration = round(float(h_row.avg_duration or 0), 2) if h_row else 0.0
     total_rows = int(h_row.total_rows or 0) if h_row else 0
-    success_rate = round((successful_queries / total_queries * 100), 1) if total_queries > 0 else 0.0
+    success_rate = (
+        round((successful_queries / total_queries * 100), 1)
+        if total_queries > 0
+        else 0.0
+    )
 
     # Challenge progress and experience metrics
     passed_challenges_query = (
@@ -219,7 +235,9 @@ async def get_profile(
     if passed_ids:
         try:
             xp_res = await db.execute(
-                select(func.sum(Challenge.points_xp)).where(Challenge.id.in_(passed_ids))
+                select(func.sum(Challenge.points_xp)).where(
+                    Challenge.id.in_(passed_ids)
+                )
             )
             total_xp = xp_res.scalar() or 0
         except Exception:
@@ -261,25 +279,28 @@ async def get_profile(
         )
         tables_count = tbl_count_res.scalar() or 0
 
-    return success_envelope({
-        "user": UserResponse.model_validate(user).model_dump(),
-        "stats": {
-            "total_queries": total_queries,
-            "successful_queries": successful_queries,
-            "failed_queries": failed_queries,
-            "success_rate_pct": success_rate,
-            "avg_duration_ms": avg_duration,
-            "total_rows_processed": total_rows,
-            "challenges_passed": challenges_passed,
-            "total_challenges": total_challenges,
-            "total_xp": total_xp,
-            "rank_title": rank_title,
-            "workspaces_count": workspaces_count,
-            "max_workspaces": 3,
-            "datasets_count": datasets_count,
-            "tables_count": tables_count,
-        }
-    }, req_id)
+    return success_envelope(
+        {
+            "user": UserResponse.model_validate(user).model_dump(),
+            "stats": {
+                "total_queries": total_queries,
+                "successful_queries": successful_queries,
+                "failed_queries": failed_queries,
+                "success_rate_pct": success_rate,
+                "avg_duration_ms": avg_duration,
+                "total_rows_processed": total_rows,
+                "challenges_passed": challenges_passed,
+                "total_challenges": total_challenges,
+                "total_xp": total_xp,
+                "rank_title": rank_title,
+                "workspaces_count": workspaces_count,
+                "max_workspaces": 1 if user.is_demo else 3,
+                "datasets_count": datasets_count,
+                "tables_count": tables_count,
+            },
+        },
+        req_id,
+    )
 
 
 @router.put("/profile")
@@ -306,10 +327,13 @@ async def update_profile(
 
     await db.commit()
     await db.refresh(user)
-    return success_envelope({
-        "message": "Profil berhasil diperbarui.",
-        "user": UserResponse.model_validate(user).model_dump(),
-    }, req_id)
+    return success_envelope(
+        {
+            "message": "Profil berhasil diperbarui.",
+            "user": UserResponse.model_validate(user).model_dump(),
+        },
+        req_id,
+    )
 
 
 @router.post("/change-password")
