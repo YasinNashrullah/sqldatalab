@@ -1,0 +1,26 @@
+product_id,product_name,category,price,stock
+PROD-001,Wireless Headphones,Electronics,450000,85
+PROD-002,Mechanical Keyboard RGB,Electronics,620000,42
+PROD-003,USB-C Hub 7-in-1,Electronics,280000,110
+PROD-004,Ergonomic Mouse,Electronics,310000,65
+PROD-005,Smart Fitness Watch,Electronics,850000,30
+PROD-006,Leather Sneakers,Fashion,490000,50
+PROD-007,Slim Fit Chino Pants,Fashion,240000,95
+PROD-008,Denim Jacket Vintage,Fashion,420000,38
+PROD-009,Cotton Casual Shirt,Fashion,185000,120
+PROD-010,Backpack Travel Pro,Fashion,350000,75
+PROD-011,Mastering SQL Analytics,Books,150000,200
+PROD-012,Python Data Science Hand,Books,195000,150
+PROD-013,Database Systems Design,Books,220000,80
+PROD-014,Clean Code Principles,Books,175000,130
+PROD-015,Modern Business Intel,Books,160000,90
+PROD-016,Hydrating Face Serum,Beauty,145000,140
+PROD-017,Organic Herbal Shampoo,Beauty,90000,180
+PROD-018,Sunscreen SPF 50 PA+,Beauty,110000,160
+PROD-019,Deep Cleansing Facial Foam,Beauty,75000,210
+PROD-020,Body Lotion Shea Butter,Beauty,85000,175
+PROD-021,Yoga Mat Eco-Friendly,Sports,175000,80
+PROD-022,Resistance Bands Set,Sports,95000,150
+PROD-023,Stainless Water Bottle,Sports,125000,120
+PROD-024,Running Shoes Breathable,Sports,550000,45
+PROD-025,Adjustable Dumbbell 10KG,Sports,380000,35

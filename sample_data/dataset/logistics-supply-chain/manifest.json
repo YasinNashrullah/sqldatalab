@@ -1,0 +1,103 @@
+{
+  "id": "logistics-supply-chain",
+  "version": "1.0.0",
+  "name": "Logistics Supply Chain",
+  "category": "Logistics",
+  "subcategory": "Supply Chain Management",
+  "difficulty": "advanced",
+  "description": "Supply chain logistics system with shipments, carriers, and warehouse hubs. Practice complex JOINs and delivery performance analysis.",
+  "tags": ["logistics", "supply-chain", "shipments", "carriers", "warehouses", "delivery"],
+  
+  "tables": [
+    {
+      "name": "warehouses",
+      "file": "data/warehouses.csv",
+      "description": "Distribution hub locations with capacity information",
+      "primary_key": "hub_id"
+    },
+    {
+      "name": "carriers",
+      "file": "data/carriers.csv",
+      "description": "Shipping carrier partners with service types and ratings",
+      "primary_key": "carrier_id"
+    },
+    {
+      "name": "shipments",
+      "file": "data/shipments.csv",
+      "description": "Shipment tracking records with origin, destination, and delivery performance",
+      "primary_key": "tracking_no",
+      "foreign_keys": [
+        {
+          "column": "origin_hub_id",
+          "references": "warehouses.hub_id"
+        },
+        {
+          "column": "dest_hub_id",
+          "references": "warehouses.hub_id"
+        },
+        {
+          "column": "carrier_id",
+          "references": "carriers.carrier_id"
+        }
+      ]
+    }
+  },
+  
+  "relationships": [
+    {
+      "from": "shipments.origin_hub_id",
+      "to": "warehouses.hub_id",
+      "type": "many-to-one",
+      "description": "Each shipment originates from one warehouse hub"
+    },
+    {
+      "from": "shipments.dest_hub_id",
+      "to": "warehouses.hub_id",
+      "type": "many-to-one",
+      "description": "Each shipment is destined to one warehouse hub"
+    },
+    {
+      "from": "shipments.carrier_id",
+      "to": "carriers.carrier_id",
+      "type": "many-to-one",
+      "description": "Each shipment is handled by one carrier"
+    }
+  ],
+  
+  "sample_queries": [
+    {
+      "title": "Carrier Performance Analysis",
+      "description": "Compare on-time delivery rates across carriers",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  c.carrier_name,\n  c.service_type,\n  COUNT(s.tracking_no) as total_shipments,\n  SUM(CASE WHEN s.is_delayed = false THEN 1 ELSE 0 END) as on_time_shipments,\n  ROUND(SUM(CASE WHEN s.is_delayed = false THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as on_time_pct,\n  AVG(s.actual_days - s.est_days) as avg_delay_days\nFROM carriers c\nJOIN shipments s ON c.carrier_id = s.carrier_id\nWHERE s.delivery_status = 'Delivered'\nGROUP BY c.carrier_id, c.carrier_name, c.service_type\nORDER BY on_time_pct DESC;"
+    },
+    {
+      "title": "Busiest Shipping Routes",
+      "description": "Top origin-destination pairs by shipment volume",
+      "difficulty": "advanced",
+      "sql": "SELECT \n  w1.hub_name as origin,\n  w1.city as origin_city,\n  w2.hub_name as destination,\n  w2.city as dest_city,\n  COUNT(*) as shipment_count,\n  SUM(s.weight_kg) as total_weight,\n  SUM(s.shipping_cost_idr) as total_revenue\nFROM shipments s\nJOIN warehouses w1 ON s.origin_hub_id = w1.hub_id\nJOIN warehouses w2 ON s.dest_hub_id = w2.hub_id\nGROUP BY w1.hub_name, w1.city, w2.hub_name, w2.city\nORDER BY shipment_count DESC\nLIMIT 10;"
+    },
+    {
+      "title": "Delayed Shipments Investigation",
+      "description": "Analyze delayed shipments by carrier and route",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  c.carrier_name,\n  w1.city as origin_city,\n  w2.city as dest_city,\n  COUNT(*) as delayed_count,\n  AVG(s.actual_days - s.est_days) as avg_delay_days,\n  SUM(s.shipping_cost_idr) as delayed_shipment_value\nFROM shipments s\nJOIN carriers c ON s.carrier_id = c.carrier_id\nJOIN warehouses w1 ON s.origin_hub_id = w1.hub_id\nJOIN warehouses w2 ON s.dest_hub_id = w2.hub_id\nWHERE s.is_delayed = true\nGROUP BY c.carrier_name, w1.city, w2.city\nORDER BY delayed_count DESC;"
+    },
+    {
+      "title": "Warehouse Utilization",
+      "description": "Shipment volume per warehouse hub",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  w.hub_name,\n  w.city,\n  w.province,\n  COUNT(DISTINCT s1.tracking_no) as outbound_shipments,\n  COUNT(DISTINCT s2.tracking_no) as inbound_shipments,\n  COUNT(DISTINCT s1.tracking_no) + COUNT(DISTINCT s2.tracking_no) as total_shipments\nFROM warehouses w\nLEFT JOIN shipments s1 ON w.hub_id = s1.origin_hub_id\nLEFT JOIN shipments s2 ON w.hub_id = s2.dest_hub_id\nGROUP BY w.hub_id, w.hub_name, w.city, w.province\nORDER BY total_shipments DESC;"
+    }
+  ],
+  
+  "metadata": {
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "author": "SQL Data Lab",
+    "license": "CC BY 4.0",
+    "source": "Generated sample data",
+    "row_count_approx": 140,
+    "use_cases": ["Multi-table JOINs", "Delivery performance", "Route optimization", "Delay analysis"]
+  }
+}

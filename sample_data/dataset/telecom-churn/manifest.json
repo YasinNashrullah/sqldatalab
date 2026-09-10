@@ -1,0 +1,83 @@
+{
+  "id": "telecom-churn",
+  "version": "1.0.0",
+  "name": "Telecom Customer Churn",
+  "category": "Telecommunications",
+  "subcategory": "Customer Analytics",
+  "difficulty": "advanced",
+  "description": "Telecommunications churn analysis database with customer profiles, service subscriptions, and churn prediction data. Practice predictive analytics and customer retention analysis.",
+  "tags": ["telecom", "churn", "retention", "customers", "services", "predictive"],
+  
+  "tables": [
+    {
+      "name": "customers",
+      "file": "data/customers.csv",
+      "description": "Telecom customer master data with demographics and signup dates",
+      "primary_key": "customer_id"
+    },
+    {
+      "name": "services",
+      "file": "data/services.csv",
+      "description": "Available telecom services and pricing catalog",
+      "primary_key": "service_id"
+    },
+    {
+      "name": "churn_records",
+      "file": "data/churn_records.csv",
+      "description": "Customer churn analysis with contract details, charges, and churn predictions",
+      "primary_key": "record_id",
+      "foreign_keys": [
+        {
+          "column": "customer_id",
+          "references": "customers.customer_id"
+        }
+      ]
+    }
+  ],
+  
+  "relationships": [
+    {
+      "from": "churn_records.customer_id",
+      "to": "customers.customer_id",
+      "type": "many-to-one",
+      "description": "Each churn record belongs to one customer"
+    }
+  ],
+  
+  "sample_queries": [
+    {
+      "title": "High-Risk Churn Customers",
+      "description": "Identify customers with high churn risk scores who haven't churned yet",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  c.customer_name,\n  c.city,\n  cr.contract_type,\n  cr.monthly_charges_idr,\n  cr.tenure_months,\n  cr.churn_risk_score,\n  cr.has_churned\nFROM customers c\nJOIN churn_records cr ON c.customer_id = cr.customer_id\nWHERE cr.has_churned = false \n  AND cr.churn_risk_score >= 70\nORDER BY cr.churn_risk_score DESC;"
+    },
+    {
+      "title": "Churn Rate by Contract Type",
+      "description": "Calculate churn percentage across different contract types",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  contract_type,\n  COUNT(*) as total_customers,\n  SUM(CASE WHEN has_churned = true THEN 1 ELSE 0 END) as churned_customers,\n  ROUND(SUM(CASE WHEN has_churned = true THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as churn_rate,\n  AVG(monthly_charges_idr) as avg_monthly_charges,\n  AVG(tenure_months) as avg_tenure\nFROM churn_records\nGROUP BY contract_type\nORDER BY churn_rate DESC;"
+    },
+    {
+      "title": "Revenue at Risk Analysis",
+      "description": "Calculate potential revenue loss from high-risk customers",
+      "difficulty": "advanced",
+      "sql": "WITH risk_segments AS (\n  SELECT \n    CASE \n      WHEN churn_risk_score >= 80 THEN 'Critical'\n      WHEN churn_risk_score >= 60 THEN 'High'\n      WHEN churn_risk_score >= 40 THEN 'Medium'\n      ELSE 'Low'\n    END as risk_segment,\n    cr.*\n  FROM churn_records cr\n  WHERE has_churned = false\n)\nSELECT \n  risk_segment,\n  COUNT(*) as customer_count,\n  SUM(monthly_charges_idr) as monthly_revenue_at_risk,\n  SUM(monthly_charges_idr * 12) as annual_revenue_at_risk,\n  AVG(churn_risk_score) as avg_risk_score\nFROM risk_segments\nGROUP BY risk_segment\nORDER BY \n  CASE risk_segment \n    WHEN 'Critical' THEN 1 \n    WHEN 'High' THEN 2 \n    WHEN 'Medium' THEN 3 \n    ELSE 4 \n  END;"
+    },
+    {
+      "title": "Tenure Impact on Churn",
+      "description": "Analyze relationship between customer tenure and churn behavior",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  CASE \n    WHEN tenure_months <= 6 THEN '0-6 months'\n    WHEN tenure_months <= 12 THEN '7-12 months'\n    WHEN tenure_months <= 24 THEN '13-24 months'\n    ELSE '24+ months'\n  END as tenure_group,\n  COUNT(*) as customers,\n  AVG(monthly_charges_idr) as avg_charges,\n  ROUND(AVG(CASE WHEN has_churned = true THEN 100 ELSE 0 END), 1) as churn_pct\nFROM churn_records\nGROUP BY tenure_group\nORDER BY \n  CASE tenure_group\n    WHEN '0-6 months' THEN 1\n    WHEN '7-12 months' THEN 2\n    WHEN '13-24 months' THEN 3\n    ELSE 4\n  END;"
+    }
+  ],
+  
+  "metadata": {
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "author": "SQL Data Lab",
+    "license": "CC BY 4.0",
+    "source": "Generated sample data",
+    "row_count_approx": 115,
+    "use_cases": ["Churn prediction", "Customer retention", "Revenue risk analysis", "CASE expressions"]
+  }
+}

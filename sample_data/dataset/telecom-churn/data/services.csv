@@ -1,0 +1,6 @@
+service_id,service_name,category,monthly_fee_idr
+SRV-01,Fiber Ultra 100Mbps,Fiber Internet,350000
+SRV-02,Fiber Ultra 300Mbps,Fiber Internet,650000
+SRV-03,IPTV Entertainment HD,TV Addon,150000
+SRV-04,Static IP Dedicated,Business Addon,200000
+SRV-05,Cloud Backup 1TB,Storage Addon,75000

@@ -1,0 +1,9 @@
+doctor_id,doctor_name,specialization,department,room_number
+DOC-01,"dr. Budi Setiawan, Sp.PD",Penyakit Dalam,Internal Medicine,Room 201
+DOC-02,"dr. Sarah Kartika, Sp.JP",Jantung & Pembuluh,Cardiology,Room 305
+DOC-03,"dr. Hendra Wijaya, Sp.B",Bedah Umum,General Surgery,Room 102
+DOC-04,"dr. Maya Indriani, Sp.A",Kesehatan Anak,Pediatrics,Room 108
+DOC-05,"dr. Andi Pratama, Sp.S",Saraf & Neurologi,Neurology,Room 204
+DOC-06,"dr. Ratna Juwita, Sp.OG",Kebidanan & Kandungan,Obstetrics,Room 301
+DOC-07,"dr. Faisal Rahman, Sp.P",Paru & Respirasi,Pulmonology,Room 209
+DOC-08,"dr. Jessica Tan, Sp.THT",THT-KL,ENT,Room 105

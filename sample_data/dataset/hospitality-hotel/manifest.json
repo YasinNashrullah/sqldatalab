@@ -1,0 +1,93 @@
+{
+  "id": "hospitality-hotel",
+  "version": "1.0.0",
+  "name": "Hotel Booking System",
+  "category": "Hospitality",
+  "subcategory": "Hotel Management",
+  "difficulty": "intermediate",
+  "description": "Hotel reservation database with guest profiles, room inventory, and booking records. Practice date calculations and revenue analysis.",
+  "tags": ["hospitality", "hotel", "booking", "reservation", "guests", "rooms"],
+  
+  "tables": [
+    {
+      "name": "guests",
+      "file": "data/guests.csv",
+      "description": "Guest profiles with contact info, nationality, and loyalty points",
+      "primary_key": "guest_id"
+    },
+    {
+      "name": "rooms",
+      "file": "data/rooms.csv",
+      "description": "Room inventory with type, branch location, and pricing",
+      "primary_key": "room_id"
+    },
+    {
+      "name": "bookings",
+      "file": "data/bookings.csv",
+      "description": "Hotel reservations with stay duration, pricing, and booking status",
+      "primary_key": "booking_id",
+      "foreign_keys": [
+        {
+          "column": "guest_id",
+          "references": "guests.guest_id"
+        },
+        {
+          "column": "room_id",
+          "references": "rooms.room_id"
+        }
+      ]
+    }
+  },
+  
+  "relationships": [
+    {
+      "from": "bookings.guest_id",
+      "to": "guests.guest_id",
+      "type": "many-to-one",
+      "description": "Each booking belongs to one guest"
+    },
+    {
+      "from": "bookings.room_id",
+      "to": "rooms.room_id",
+      "type": "many-to-one",
+      "description": "Each booking is for one room"
+    }
+  ],
+  
+  "sample_queries": [
+    {
+      "title": "Revenue by Room Type",
+      "description": "Total revenue breakdown by room type category",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  r.room_type,\n  COUNT(b.booking_id) as total_bookings,\n  SUM(b.nights_stayed) as total_nights,\n  SUM(b.total_price_idr) as total_revenue,\n  AVG(b.total_price_idr / b.nights_stayed) as avg_price_per_night\nFROM rooms r\nJOIN bookings b ON r.room_id = b.room_id\nWHERE b.booking_status = 'Confirmed'\nGROUP BY r.room_type\nORDER BY total_revenue DESC;"
+    },
+    {
+      "title": "Top Loyalty Guests",
+      "description": "Most frequent guests ranked by loyalty points and booking count",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  g.full_name,\n  g.nationality,\n  g.loyalty_points,\n  COUNT(b.booking_id) as total_bookings,\n  SUM(b.total_price_idr) as lifetime_value\nFROM guests g\nLEFT JOIN bookings b ON g.guest_id = b.guest_id\nGROUP BY g.guest_id, g.full_name, g.nationality, g.loyalty_points\nORDER BY g.loyalty_points DESC\nLIMIT 10;"
+    },
+    {
+      "title": "Occupancy Rate by Branch",
+      "description": "Calculate room occupancy percentage per hotel branch",
+      "difficulty": "advanced",
+      "sql": "SELECT \n  r.branch_name,\n  COUNT(DISTINCT r.room_id) as total_rooms,\n  COUNT(DISTINCT CASE WHEN b.booking_status = 'Confirmed' THEN b.room_id END) as occupied_rooms,\n  ROUND(COUNT(DISTINCT CASE WHEN b.booking_status = 'Confirmed' THEN b.room_id END) * 100.0 / COUNT(DISTINCT r.room_id), 1) as occupancy_pct\nFROM rooms r\nLEFT JOIN bookings b ON r.room_id = b.room_id\nGROUP BY r.branch_name\nORDER BY occupancy_pct DESC;"
+    },
+    {
+      "title": "Booking Channel Performance",
+      "description": "Compare bookings and revenue across different booking channels",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  booking_channel,\n  COUNT(*) as booking_count,\n  SUM(total_price_idr) as total_revenue,\n  AVG(total_price_idr) as avg_booking_value,\n  AVG(nights_stayed) as avg_stay_duration\nFROM bookings\nWHERE booking_status != 'Cancelled'\nGROUP BY booking_channel\nORDER BY total_revenue DESC;"
+    }
+  ],
+  
+  "metadata": {
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "author": "SQL Data Lab",
+    "license": "CC BY 4.0",
+    "source": "Generated sample data",
+    "row_count_approx": 140,
+    "use_cases": ["Revenue analysis", "Occupancy tracking", "Guest loyalty", "Booking channel optimization"]
+  }
+}

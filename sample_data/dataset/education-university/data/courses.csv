@@ -1,0 +1,9 @@
+course_id,course_name,credits,department,semester_offered
+CS-101,Introduction to Computer Science,3,Informatics,1
+CS-202,Data Structures & Algorithms,4,Informatics,3
+CS-305,Database Systems & SQL Design,3,Information Systems,5
+CS-410,Big Data Analytics & Engineering,3,Data Science,7
+DS-201,Applied Probability & Statistics,3,Data Science,3
+IS-204,Business Process Management,3,Information Systems,4
+IS-301,Enterprise Resource Planning,3,Information Systems,5
+CS-499,Capstone Final Project,6,Informatics,8

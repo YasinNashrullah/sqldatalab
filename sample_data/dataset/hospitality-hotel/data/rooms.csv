@@ -1,0 +1,9 @@
+room_id,room_number,room_type,branch_name,price_per_night_idr,floor
+RM-101,101,Standard Double,Kuta Resort Bali,650000,1
+RM-102,102,Standard Twin,Kuta Resort Bali,650000,1
+RM-201,201,Deluxe Ocean View,Kuta Resort Bali,1100000,2
+RM-202,202,Deluxe Ocean View,Kuta Resort Bali,1100000,2
+RM-301,301,Executive Suite,Kuta Resort Bali,2400000,3
+RM-401,101,Superior City View,Grand Thamrin Jakarta,850000,4
+RM-402,102,Superior King,Grand Thamrin Jakarta,900000,4
+RM-501,201,Junior Suite,Grand Thamrin Jakarta,1650000,5

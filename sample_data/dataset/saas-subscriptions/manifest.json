@@ -1,0 +1,95 @@
+{
+  "id": "saas-subscriptions",
+  "version": "1.0.0",
+  "name": "SaaS Subscription Management",
+  "category": "SaaS",
+  "subcategory": "Subscription Business",
+  "difficulty": "intermediate",
+  "description": "SaaS business database with subscription plans, customer accounts, and invoicing. Practice recurring revenue analysis and churn metrics.",
+  "tags": ["saas", "subscriptions", "recurring-revenue", "mrr", "invoices", "plans"],
+  
+  "tables": [
+    {
+      "name": "plans",
+      "file": "data/plans.csv",
+      "description": "Subscription plan tiers with pricing and seat limits",
+      "primary_key": "plan_id"
+    },
+    {
+      "name": "subscriptions",
+      "file": "data/subscriptions.csv",
+      "description": "Customer subscription records with plan details and renewal tracking",
+      "primary_key": "subscription_id",
+      "foreign_keys": [
+        {
+          "column": "plan_id",
+          "references": "plans.plan_id"
+        }
+      ]
+    },
+    {
+      "name": "invoices",
+      "file": "data/invoices.csv",
+      "description": "Billing invoices with payment status tracking",
+      "primary_key": "invoice_id",
+      "foreign_keys": [
+        {
+          "column": "subscription_id",
+          "references": "subscriptions.subscription_id"
+        }
+      ]
+    }
+  ],
+  
+  "relationships": [
+    {
+      "from": "subscriptions.plan_id",
+      "to": "plans.plan_id",
+      "type": "many-to-one",
+      "description": "Each subscription is for one plan tier"
+    },
+    {
+      "from": "invoices.subscription_id",
+      "to": "subscriptions.subscription_id",
+      "type": "many-to-one",
+      "description": "Each invoice belongs to one subscription"
+    }
+  ],
+  
+  "sample_queries": [
+    {
+      "title": "Monthly Recurring Revenue (MRR)",
+      "description": "Calculate total MRR by plan tier from active subscriptions",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  p.plan_name,\n  COUNT(s.subscription_id) as active_subscriptions,\n  SUM(s.seats_purchased) as total_seats,\n  SUM(s.seats_purchased * p.monthly_price_usd) as monthly_recurring_revenue\nFROM plans p\nJOIN subscriptions s ON p.plan_id = s.plan_id\nWHERE s.status = 'Active'\nGROUP BY p.plan_id, p.plan_name\nORDER BY monthly_recurring_revenue DESC;"
+    },
+    {
+      "title": "Churn Risk Analysis",
+      "description": "Identify subscriptions approaching renewal with payment issues",
+      "difficulty": "advanced",
+      "sql": "SELECT \n  s.company_name,\n  p.plan_name,\n  s.renewal_date,\n  DATE_DIFF('day', CURRENT_DATE, s.renewal_date) as days_to_renewal,\n  COUNT(i.invoice_id) as total_invoices,\n  SUM(CASE WHEN i.payment_status = 'Failed' THEN 1 ELSE 0 END) as failed_payments,\n  s.seats_purchased * p.monthly_price_usd as mrr_at_risk\nFROM subscriptions s\nJOIN plans p ON s.plan_id = p.plan_id\nLEFT JOIN invoices i ON s.subscription_id = i.subscription_id\nWHERE s.status = 'Active' \n  AND s.renewal_date <= CURRENT_DATE + INTERVAL 30 DAY\nGROUP BY s.subscription_id, s.company_name, p.plan_name, s.renewal_date, s.seats_purchased, p.monthly_price_usd\nHAVING SUM(CASE WHEN i.payment_status = 'Failed' THEN 1 ELSE 0 END) > 0\nORDER BY mrr_at_risk DESC;"
+    },
+    {
+      "title": "Revenue by Target Audience",
+      "description": "Compare revenue across different customer segments",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  p.target_audience,\n  COUNT(s.subscription_id) as customer_count,\n  SUM(s.seats_purchased * p.monthly_price_usd) as total_mrr,\n  AVG(s.seats_purchased) as avg_seats_per_customer\nFROM plans p\nJOIN subscriptions s ON p.plan_id = s.plan_id\nWHERE s.status = 'Active'\nGROUP BY p.target_audience\nORDER BY total_mrr DESC;"
+    },
+    {
+      "title": "Payment Collection Rate",
+      "description": "Invoice payment success rate by month",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  DATE_TRUNC('month', invoice_date) as month,\n  COUNT(*) as total_invoices,\n  SUM(CASE WHEN payment_status = 'Paid' THEN 1 ELSE 0 END) as paid_invoices,\n  ROUND(SUM(CASE WHEN payment_status = 'Paid' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as payment_success_rate,\n  SUM(amount_usd) as total_billed,\n  SUM(CASE WHEN payment_status = 'Paid' THEN amount_usd ELSE 0 END) as total_collected\nFROM invoices\nGROUP BY month\nORDER BY month DESC;"
+    }
+  ],
+  
+  "metadata": {
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "author": "SQL Data Lab",
+    "license": "CC BY 4.0",
+    "source": "Generated sample data",
+    "row_count_approx": 105,
+    "use_cases": ["MRR calculation", "Churn analysis", "Revenue forecasting", "Date arithmetic"]
+  }
+}

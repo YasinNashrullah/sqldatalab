@@ -1,0 +1,87 @@
+{
+  "id": "ecommerce-sales",
+  "version": "1.0.0",
+  "name": "E-Commerce Sales",
+  "category": "E-Commerce",
+  "subcategory": "Retail",
+  "difficulty": "beginner",
+  "description": "Basic e-commerce database with customer orders and product catalog. Ideal for learning JOINs and aggregate functions.",
+  "tags": ["retail", "sales", "transactions", "customers", "orders"],
+  
+  "tables": [
+    {
+      "name": "customers",
+      "file": "data/customers.csv",
+      "description": "Customer master data including membership tier and location",
+      "primary_key": "customer_id"
+    },
+    {
+      "name": "products",
+      "file": "data/products.csv",
+      "description": "Product catalog with pricing and inventory stock levels",
+      "primary_key": "product_id"
+    },
+    {
+      "name": "orders",
+      "file": "data/orders.csv",
+      "description": "Order transactions linking customers to products with payment and shipping details",
+      "primary_key": "order_id",
+      "foreign_keys": [
+        {
+          "column": "customer_id",
+          "references": "customers.customer_id"
+        },
+        {
+          "column": "product_id",
+          "references": "products.product_id"
+        }
+      ]
+    }
+  ],
+  
+  "relationships": [
+    {
+      "from": "orders.customer_id",
+      "to": "customers.customer_id",
+      "type": "many-to-one",
+      "description": "Each order belongs to one customer"
+    },
+    {
+      "from": "orders.product_id",
+      "to": "products.product_id",
+      "type": "many-to-one",
+      "description": "Each order contains one product"
+    }
+  ],
+  
+  "sample_queries": [
+    {
+      "title": "Top 10 Customers by Total Revenue",
+      "description": "Find customers with highest total order value across all transactions",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  c.customer_name,\n  c.city,\n  c.membership_tier,\n  COUNT(o.order_id) as total_orders,\n  SUM(o.total_amount) as total_revenue\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nGROUP BY c.customer_id, c.customer_name, c.city, c.membership_tier\nORDER BY total_revenue DESC\nLIMIT 10;"
+    },
+    {
+      "title": "Monthly Sales Trend",
+      "description": "Sales volume and revenue aggregated by month",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  DATE_TRUNC('month', order_date) as month,\n  COUNT(*) as order_count,\n  SUM(total_amount) as total_sales,\n  AVG(total_amount) as avg_order_value\nFROM orders\nWHERE order_status = 'Delivered'\nGROUP BY month\nORDER BY month;"
+    },
+    {
+      "title": "Product Performance by Category",
+      "description": "Sales metrics grouped by product category",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  p.category,\n  COUNT(DISTINCT o.order_id) as orders,\n  SUM(o.quantity) as units_sold,\n  SUM(o.total_amount) as revenue,\n  AVG(p.stock) as avg_stock_level\nFROM products p\nLEFT JOIN orders o ON p.product_id = o.product_id\nGROUP BY p.category\nORDER BY revenue DESC;"
+    }
+  ],
+  
+  "metadata": {
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "author": "SQL Data Lab",
+    "license": "CC BY 4.0",
+    "source": "Generated sample data",
+    "row_count_approx": 120,
+    "use_cases": ["Learning JOINs", "Aggregation functions", "Sales analytics", "Customer segmentation"]
+  }
+}

@@ -1,0 +1,61 @@
+employee_id,full_name,department_id,job_title,hire_date,work_mode,performance_score,status
+EMP-001,Employee 001,D04,Data Analyst,2024-06-10,WFO,4.23,Active
+EMP-002,Employee 002,D05,Data Analyst,2024-09-24,Remote,3.67,Active
+EMP-003,Employee 003,D05,Accountant,2024-02-22,Hybrid,3.22,Active
+EMP-004,Employee 004,D05,Product Manager,2022-01-21,Remote,3.5,Active
+EMP-005,Employee 005,D05,Product Manager,2024-01-23,WFO,3.58,Active
+EMP-006,Employee 006,D04,Product Manager,2021-12-24,Remote,3.51,Active
+EMP-007,Employee 007,D02,HR Specialist,2023-10-24,WFO,3.42,Active
+EMP-008,Employee 008,D06,Senior Engineer,2025-10-28,Hybrid,4.17,Active
+EMP-009,Employee 009,D04,UI/UX Designer,2025-12-14,Hybrid,4.07,Active
+EMP-010,Employee 010,D02,Account Executive,2024-09-13,WFO,3.89,Active
+EMP-011,Employee 011,D02,Data Analyst,2021-05-12,Remote,3.66,Active
+EMP-012,Employee 012,D01,Data Analyst,2024-11-24,WFO,3.65,Active
+EMP-013,Employee 013,D01,HR Specialist,2021-11-01,WFO,4.4,Active
+EMP-014,Employee 014,D05,Data Analyst,2023-10-22,Remote,4.77,Active
+EMP-015,Employee 015,D01,Account Executive,2024-03-07,WFO,3.95,Active
+EMP-016,Employee 016,D05,Product Manager,2021-01-11,Remote,3.48,Active
+EMP-017,Employee 017,D05,Senior Engineer,2023-08-15,Hybrid,3.68,Active
+EMP-018,Employee 018,D04,Product Manager,2022-12-03,Hybrid,3.68,Active
+EMP-019,Employee 019,D02,Data Analyst,2021-06-08,Hybrid,4.07,Active
+EMP-020,Employee 020,D01,Data Analyst,2023-01-20,WFO,3.76,Active
+EMP-021,Employee 021,D02,Product Manager,2021-07-26,WFO,4.0,Active
+EMP-022,Employee 022,D06,Accountant,2024-03-16,WFO,3.29,Active
+EMP-023,Employee 023,D06,Product Manager,2021-04-06,Hybrid,3.42,Active
+EMP-024,Employee 024,D03,Product Manager,2023-01-08,Hybrid,4.17,Active
+EMP-025,Employee 025,D04,Account Executive,2024-11-26,WFO,3.33,Active
+EMP-026,Employee 026,D03,Product Manager,2022-07-15,Remote,3.29,Active
+EMP-027,Employee 027,D03,Accountant,2023-04-18,Hybrid,3.65,Active
+EMP-028,Employee 028,D02,Data Analyst,2021-10-02,Remote,4.35,Active
+EMP-029,Employee 029,D01,Account Executive,2025-05-07,Remote,4.08,Active
+EMP-030,Employee 030,D06,Accountant,2023-04-07,Remote,3.93,Active
+EMP-031,Employee 031,D04,Product Manager,2021-09-15,WFO,4.16,Active
+EMP-032,Employee 032,D02,Data Analyst,2025-05-18,WFO,3.88,Active
+EMP-033,Employee 033,D04,Product Manager,2025-05-18,WFO,4.8,Active
+EMP-034,Employee 034,D01,Account Executive,2021-09-09,Remote,4.28,Active
+EMP-035,Employee 035,D01,Senior Engineer,2021-05-07,Remote,3.69,Active
+EMP-036,Employee 036,D06,Account Executive,2024-11-06,WFO,3.21,Active
+EMP-037,Employee 037,D02,Account Executive,2021-06-21,WFO,3.97,Active
+EMP-038,Employee 038,D02,Senior Engineer,2023-12-11,Hybrid,4.94,Active
+EMP-039,Employee 039,D05,Account Executive,2023-09-08,WFO,4.49,Active
+EMP-040,Employee 040,D06,Account Executive,2025-12-09,Hybrid,3.56,Active
+EMP-041,Employee 041,D01,Product Manager,2024-02-04,Hybrid,3.91,Active
+EMP-042,Employee 042,D03,Senior Engineer,2021-02-27,WFO,3.37,Active
+EMP-043,Employee 043,D02,Accountant,2021-02-15,Remote,4.77,Active
+EMP-044,Employee 044,D04,Senior Engineer,2024-12-11,WFO,3.61,Active
+EMP-045,Employee 045,D05,Senior Engineer,2024-09-14,WFO,3.66,Active
+EMP-046,Employee 046,D03,Accountant,2025-02-14,Hybrid,3.92,Active
+EMP-047,Employee 047,D05,Data Analyst,2024-10-26,Remote,4.19,Active
+EMP-048,Employee 048,D03,Accountant,2021-02-20,WFO,4.06,Active
+EMP-049,Employee 049,D05,Accountant,2022-10-10,Remote,4.02,Active
+EMP-050,Employee 050,D02,Accountant,2025-08-20,WFO,3.94,Active
+EMP-051,Employee 051,D06,Data Analyst,2022-05-23,WFO,4.61,Active
+EMP-052,Employee 052,D05,UI/UX Designer,2023-02-28,Hybrid,4.0,Active
+EMP-053,Employee 053,D03,Product Manager,2022-02-24,WFO,3.64,Active
+EMP-054,Employee 054,D06,Product Manager,2022-09-12,WFO,3.46,Active
+EMP-055,Employee 055,D01,Data Analyst,2025-04-05,Hybrid,3.8,Active
+EMP-056,Employee 056,D01,Data Analyst,2021-11-15,Hybrid,4.56,Active
+EMP-057,Employee 057,D05,HR Specialist,2021-01-16,Remote,4.71,Active
+EMP-058,Employee 058,D01,HR Specialist,2023-11-11,WFO,4.59,Active
+EMP-059,Employee 059,D05,Senior Engineer,2023-08-09,WFO,4.1,Active
+EMP-060,Employee 060,D05,HR Specialist,2025-09-13,WFO,4.65,Active

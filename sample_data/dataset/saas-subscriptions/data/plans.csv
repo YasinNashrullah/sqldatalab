@@ -1,0 +1,5 @@
+plan_id,plan_name,monthly_price_usd,seat_limit,target_audience
+PLAN-01,Starter Tier,49,5,Small Team
+PLAN-02,Growth Tier,149,20,Scaling Startup
+PLAN-03,Professional Tier,299,50,Mid-Market
+PLAN-04,Enterprise Tier,799,200,Enterprise Full

@@ -1,0 +1,93 @@
+{
+  "id": "healthcare-hospital",
+  "version": "1.0.0",
+  "name": "Hospital Healthcare System",
+  "category": "Healthcare",
+  "subcategory": "Hospital Management",
+  "difficulty": "intermediate",
+  "description": "Hospital patient management system with admissions, doctors, and patient records. Practice date calculations and cost analysis.",
+  "tags": ["healthcare", "hospital", "patients", "doctors", "admissions", "medical"],
+  
+  "tables": [
+    {
+      "name": "patients",
+      "file": "data/patients.csv",
+      "description": "Patient master records with demographic and contact information",
+      "primary_key": "patient_id"
+    },
+    {
+      "name": "doctors",
+      "file": "data/doctors.csv",
+      "description": "Medical staff directory with specializations and departments",
+      "primary_key": "doctor_id"
+    },
+    {
+      "name": "admissions",
+      "file": "data/admissions.csv",
+      "description": "Hospital admission records with diagnosis, costs, and insurance coverage",
+      "primary_key": "admission_id",
+      "foreign_keys": [
+        {
+          "column": "patient_id",
+          "references": "patients.patient_id"
+        },
+        {
+          "column": "doctor_id",
+          "references": "doctors.doctor_id"
+        }
+      ]
+    }
+  ],
+  
+  "relationships": [
+    {
+      "from": "admissions.patient_id",
+      "to": "patients.patient_id",
+      "type": "many-to-one",
+      "description": "Each admission belongs to one patient"
+    },
+    {
+      "from": "admissions.doctor_id",
+      "to": "doctors.doctor_id",
+      "type": "many-to-one",
+      "description": "Each admission is handled by one primary doctor"
+    }
+  ],
+  
+  "sample_queries": [
+    {
+      "title": "Average Length of Stay by Department",
+      "description": "Calculate average hospital stay duration grouped by medical department",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  d.department,\n  COUNT(a.admission_id) as total_admissions,\n  AVG(a.length_of_stay_days) as avg_stay_days,\n  AVG(a.total_cost_idr) as avg_cost\nFROM doctors d\nJOIN admissions a ON d.doctor_id = a.doctor_id\nGROUP BY d.department\nORDER BY total_admissions DESC;"
+    },
+    {
+      "title": "Top 10 Most Common Diagnoses",
+      "description": "Most frequently occurring diagnoses in admission records",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  diagnosis,\n  COUNT(*) as case_count,\n  AVG(length_of_stay_days) as avg_stay,\n  AVG(total_cost_idr) as avg_total_cost,\n  AVG(insurance_covered_idr) as avg_insurance_covered\nFROM admissions\nGROUP BY diagnosis\nORDER BY case_count DESC\nLIMIT 10;"
+    },
+    {
+      "title": "Insurance Coverage Analysis",
+      "description": "Compare out-of-pocket costs across different payment types",
+      "difficulty": "advanced",
+      "sql": "SELECT \n  payment_type,\n  COUNT(*) as admission_count,\n  AVG(total_cost_idr) as avg_total_cost,\n  AVG(insurance_covered_idr) as avg_insurance_covered,\n  AVG(total_cost_idr - insurance_covered_idr) as avg_out_of_pocket,\n  (AVG(insurance_covered_idr) / AVG(total_cost_idr) * 100) as avg_coverage_pct\nFROM admissions\nGROUP BY payment_type\nORDER BY avg_coverage_pct DESC;"
+    },
+    {
+      "title": "Doctor Workload by Specialization",
+      "description": "Number of patients treated per doctor grouped by specialization",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  d.specialization,\n  d.doctor_name,\n  COUNT(DISTINCT a.patient_id) as unique_patients,\n  COUNT(a.admission_id) as total_admissions,\n  SUM(a.length_of_stay_days) as total_patient_days\nFROM doctors d\nLEFT JOIN admissions a ON d.doctor_id = a.doctor_id\nGROUP BY d.doctor_id, d.specialization, d.doctor_name\nORDER BY total_admissions DESC;"
+    }
+  ],
+  
+  "metadata": {
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "author": "SQL Data Lab",
+    "license": "CC BY 4.0",
+    "source": "Generated sample data",
+    "row_count_approx": 130,
+    "use_cases": ["Date calculations", "Cost analysis", "Healthcare analytics", "Insurance coverage"]
+  }
+}

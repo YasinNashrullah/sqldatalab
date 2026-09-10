@@ -1,0 +1,87 @@
+{
+  "id": "retail-inventory",
+  "version": "1.0.0",
+  "name": "Retail Inventory Management",
+  "category": "Retail",
+  "subcategory": "Inventory & Procurement",
+  "difficulty": "intermediate",
+  "description": "Retail inventory system with product catalog, supplier data, and stock levels. Practice inventory management and procurement analysis.",
+  "tags": ["retail", "inventory", "products", "suppliers", "stock", "procurement"],
+  
+  "tables": [
+    {
+      "name": "suppliers",
+      "file": "data/suppliers.csv",
+      "description": "Supplier directory with location, lead times, and vendor ratings",
+      "primary_key": "supplier_id"
+    },
+    {
+      "name": "products",
+      "file": "data/products.csv",
+      "description": "Product catalog with SKU, category, and retail pricing",
+      "primary_key": "sku"
+    },
+    {
+      "name": "inventory",
+      "file": "data/inventory.csv",
+      "description": "Stock levels per product-supplier combination with reorder tracking",
+      "primary_key": "inventory_id",
+      "foreign_keys": [
+        {
+          "column": "sku",
+          "references": "products.sku"
+        },
+        {
+          "column": "supplier_id",
+          "references": "suppliers.supplier_id"
+        }
+      ]
+    }
+  ],
+  
+  "relationships": [
+    {
+      "from": "inventory.sku",
+      "to": "products.sku",
+      "type": "many-to-one",
+      "description": "Each inventory record tracks stock for one product"
+    },
+    {
+      "from": "inventory.supplier_id",
+      "to": "suppliers.supplier_id",
+      "type": "many-to-one",
+      "description": "Each inventory record is sourced from one supplier"
+    }
+  ],
+  
+  "sample_queries": [
+    {
+      "title": "Low Stock Alert",
+      "description": "Products where current stock is at or below reorder point",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  p.product_name,\n  p.category,\n  i.current_stock,\n  i.reorder_point,\n  i.stock_status,\n  s.supplier_name,\n  s.lead_time_days,\n  i.unit_cost_idr\nFROM inventory i\nJOIN products p ON i.sku = p.sku\nJOIN suppliers s ON i.supplier_id = s.supplier_id\nWHERE i.current_stock <= i.reorder_point\nORDER BY i.current_stock ASC;"
+    },
+    {
+      "title": "Inventory Value by Category",
+      "description": "Total stock value and margin analysis grouped by product category",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  p.category,\n  COUNT(DISTINCT p.sku) as product_count,\n  SUM(i.current_stock) as total_units,\n  SUM(i.current_stock * i.unit_cost_idr) as total_cost_value,\n  SUM(i.current_stock * p.retail_price_idr) as total_retail_value,\n  ROUND((SUM(i.current_stock * p.retail_price_idr) - SUM(i.current_stock * i.unit_cost_idr)) * 100.0 / SUM(i.current_stock * p.retail_price_idr), 1) as margin_pct\nFROM products p\nJOIN inventory i ON p.sku = i.sku\nGROUP BY p.category\nORDER BY total_retail_value DESC;"
+    },
+    {
+      "title": "Supplier Performance Ranking",
+      "description": "Rank suppliers by rating and average lead time",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  s.supplier_name,\n  s.city,\n  s.vendor_rating,\n  s.lead_time_days,\n  COUNT(i.inventory_id) as products_supplied,\n  SUM(i.current_stock * i.unit_cost_idr) as total_supply_value\nFROM suppliers s\nLEFT JOIN inventory i ON s.supplier_id = i.supplier_id\nGROUP BY s.supplier_id, s.supplier_name, s.city, s.vendor_rating, s.lead_time_days\nORDER BY s.vendor_rating DESC;"
+    }
+  ],
+  
+  "metadata": {
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "author": "SQL Data Lab",
+    "license": "CC BY 4.0",
+    "source": "Generated sample data",
+    "row_count_approx": 110,
+    "use_cases": ["Inventory management", "Reorder analysis", "Supplier evaluation", "Margin calculation"]
+  }
+}

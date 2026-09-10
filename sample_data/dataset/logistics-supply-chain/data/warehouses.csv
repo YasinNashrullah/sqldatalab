@@ -1,0 +1,7 @@
+hub_id,hub_name,city,province,capacity_sqm
+HUB-JKT,Jakarta Central Hub,Jakarta Utara,DKI Jakarta,15000
+HUB-SBY,Surabaya Gateway Hub,Surabaya,Jawa Timur,12000
+HUB-BDG,Bandung Hub West,Bandung,Jawa Barat,8000
+HUB-SMG,Semarang Transit Hub,Semarang,Jawa Tengah,7500
+HUB-MDN,Sumatera Distribution Hub,Medan,Sumatera Utara,9000
+HUB-DPS,Bali & Nusa Hub,Denpasar,Bali,6000

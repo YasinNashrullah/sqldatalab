@@ -1,0 +1,71 @@
+{
+  "id": "education-sap",
+  "version": "1.0.0",
+  "name": "SAP Academic System",
+  "category": "MBG",
+  "subcategory": "Academic Records",
+  "difficulty": "beginner",
+  "description": "testing halaman Simplified academic records system with students and course enrollments. Focused on grade analysis and academic performance.",
+  "tags": ["education", "academic", "students", "grades", "enrollment"],
+  
+  "tables": [
+    {
+      "name": "students",
+      "file": "data/students.csv",
+      "description": "Student profiles with faculty, major, GPA and scholarship status",
+      "primary_key": "student_id"
+    },
+    {
+      "name": "enrollments",
+      "file": "data/enrollments.csv",
+      "description": "Course enrollment records with term, grade, and attendance percentage",
+      "primary_key": "enrollment_id",
+      "foreign_keys": [
+        {
+          "column": "student_id",
+          "references": "students.student_id"
+        }
+      ]
+    }
+  ],
+  
+  "relationships": [
+    {
+      "from": "enrollments.student_id",
+      "to": "students.student_id",
+      "type": "many-to-one",
+      "description": "Each enrollment record belongs to one student"
+    }
+  ],
+  
+  "sample_queries": [
+    {
+      "title": "GPA Distribution by Faculty",
+      "description": "Average GPA breakdown across different faculties",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  faculty,\n  COUNT(*) as student_count,\n  ROUND(AVG(current_gpa), 2) as avg_gpa,\n  MIN(current_gpa) as min_gpa,\n  MAX(current_gpa) as max_gpa\nFROM students\nGROUP BY faculty\nORDER BY avg_gpa DESC;"
+    },
+    {
+      "title": "Students with Low Attendance and High Grades",
+      "description": "Identify students who score well despite low attendance",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  s.student_name,\n  s.major,\n  e.academic_term,\n  e.attendance_pct,\n  e.final_grade\nFROM students s\nJOIN enrollments e ON s.student_id = e.student_id\nWHERE e.attendance_pct < 75 AND e.final_grade >= 80\nORDER BY e.final_grade DESC;"
+    },
+    {
+      "title": "Term-over-Term Grade Comparison",
+      "description": "Average grades per academic term to track trends",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  academic_term,\n  COUNT(*) as enrollments,\n  ROUND(AVG(final_grade), 2) as avg_grade,\n  ROUND(AVG(attendance_pct), 1) as avg_attendance\nFROM enrollments\nGROUP BY academic_term\nORDER BY academic_term;"
+    }
+  ],
+  
+  "metadata": {
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "author": "SQL Data Lab",
+    "license": "CC BY 4.0",
+    "source": "Generated sample data",
+    "row_count_approx": 80,
+    "use_cases": ["Basic JOINs", "Grade analysis", "Attendance tracking", "Aggregate functions"]
+  }
+}

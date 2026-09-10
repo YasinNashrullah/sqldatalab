@@ -1,0 +1,6 @@
+supplier_id,supplier_name,city,lead_time_days,vendor_rating
+SUP-01,PT Sumber Pangan Sejahtera,Jakarta,3,4.8
+SUP-02,CV Mega Distribusi Elektronik,Surabaya,5,4.6
+SUP-03,PT Surya Garment Nusantara,Bandung,4,4.7
+SUP-04,PT Mitra Kosmetik Sejati,Semarang,2,4.9
+SUP-05,CV Aneka Houseware Lestari,Yogyakarta,4,4.5

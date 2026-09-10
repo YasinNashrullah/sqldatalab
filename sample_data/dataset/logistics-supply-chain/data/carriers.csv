@@ -1,0 +1,6 @@
+carrier_id,carrier_name,service_type,customer_rating,hotline
+CAR-01,JNE Express,Air & Ground Cargo,4.7,021-29278888
+CAR-02,SiCepat Ekspres,Next Day & Same Day,4.8,021-50200050
+CAR-03,J&T Cargo,Heavy & Bulky Cargo,4.6,021-80661888
+CAR-04,Lion Parcel,Air Freight Domestic,4.5,021-80820072
+CAR-05,Pos Indonesia,Universal Postal Freight,4.4,161

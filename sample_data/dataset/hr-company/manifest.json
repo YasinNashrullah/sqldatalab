@@ -1,0 +1,89 @@
+{
+  "id": "hr-company",
+  "version": "1.0.0",
+  "name": "HR Employee Management",
+  "category": "Human Resources",
+  "subcategory": "Employee Management",
+  "difficulty": "intermediate",
+  "description": "Company HR system with employees, departments, and salary records. Practice organizational hierarchy and compensation analysis.",
+  "tags": ["hr", "employees", "departments", "salary", "payroll", "company"],
+  
+  "tables": [
+    {
+      "name": "departments",
+      "file": "data/departments.csv",
+      "description": "Company department structure with budget and leadership info",
+      "primary_key": "department_id"
+    },
+    {
+      "name": "employees",
+      "file": "data/employees.csv",
+      "description": "Employee master data with job titles, hire dates, and performance",
+      "primary_key": "employee_id",
+      "foreign_keys": [
+        {
+          "column": "department_id",
+          "references": "departments.department_id"
+        }
+      ]
+    },
+    {
+      "name": "salaries",
+      "file": "data/salaries.csv",
+      "description": "Employee compensation records with base salary, bonuses, and deductions",
+      "primary_key": "salary_id",
+      "foreign_keys": [
+        {
+          "column": "employee_id",
+          "references": "employees.employee_id"
+        }
+      ]
+    }
+  ],
+  
+  "relationships": [
+    {
+      "from": "employees.department_id",
+      "to": "departments.department_id",
+      "type": "many-to-one",
+      "description": "Each employee belongs to one department"
+    },
+    {
+      "from": "salaries.employee_id",
+      "to": "employees.employee_id",
+      "type": "one-to-one",
+      "description": "Each salary record belongs to one employee"
+    }
+  ],
+  
+  "sample_queries": [
+    {
+      "title": "Department Headcount and Total Payroll",
+      "description": "Employee count and total compensation cost per department",
+      "difficulty": "intermediate",
+      "sql": "SELECT \n  d.department_name,\n  COUNT(e.employee_id) as employee_count,\n  SUM(s.net_salary_idr) as total_monthly_payroll,\n  AVG(s.net_salary_idr) as avg_salary\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nLEFT JOIN salaries s ON e.employee_id = s.employee_id\nGROUP BY d.department_id, d.department_name\nORDER BY total_monthly_payroll DESC;"
+    },
+    {
+      "title": "Top Performers by Department",
+      "description": "Highest performing employees in each department",
+      "difficulty": "advanced",
+      "sql": "WITH ranked_employees AS (\n  SELECT \n    e.*,\n    d.department_name,\n    s.net_salary_idr,\n    ROW_NUMBER() OVER (PARTITION BY e.department_id ORDER BY e.performance_score DESC) as rank\n  FROM employees e\n  JOIN departments d ON e.department_id = d.department_id\n  JOIN salaries s ON e.employee_id = s.employee_id\n  WHERE e.status = 'Active'\n)\nSELECT \n  department_name,\n  full_name,\n  job_title,\n  performance_score,\n  net_salary_idr\nFROM ranked_employees\nWHERE rank = 1\nORDER BY performance_score DESC;"
+    },
+    {
+      "title": "Compensation Analysis by Job Title",
+      "description": "Salary statistics grouped by job title",
+      "difficulty": "beginner",
+      "sql": "SELECT \n  e.job_title,\n  COUNT(*) as employee_count,\n  ROUND(AVG(s.base_salary_idr)) as avg_base_salary,\n  ROUND(AVG(s.performance_bonus_idr)) as avg_bonus,\n  ROUND(AVG(s.net_salary_idr)) as avg_net_salary\nFROM employees e\nJOIN salaries s ON e.employee_id = s.employee_id\nGROUP BY e.job_title\nORDER BY avg_net_salary DESC;"
+    }
+  ],
+  
+  "metadata": {
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "author": "SQL Data Lab",
+    "license": "CC BY 4.0",
+    "source": "Generated sample data",
+    "row_count_approx": 120,
+    "use_cases": ["Organizational hierarchy", "Payroll analysis", "Performance tracking", "Window functions"]
+  }
+}

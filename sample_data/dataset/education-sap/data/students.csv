@@ -1,0 +1,51 @@
+student_id,student_name,faculty,major,current_semester,current_gpa,scholarship_awardee
+2023001,Student 001,Faculty of Computer Science,Informatics,6,2.93,NO
+2023002,Student 002,Faculty of Computer Science,Information Systems,8,3.97,YES
+2023003,Student 003,Faculty of Computer Science,Informatics,6,3.89,YES
+2023004,Student 004,Faculty of Computer Science,Data Science,2,3.41,NO
+2023005,Student 005,Faculty of Computer Science,Information Systems,6,2.8,NO
+2023006,Student 006,Faculty of Computer Science,Data Science,6,3.35,NO
+2023007,Student 007,Faculty of Computer Science,Information Systems,2,2.91,NO
+2023008,Student 008,Faculty of Computer Science,Data Science,4,3.69,NO
+2023009,Student 009,Faculty of Computer Science,Data Science,6,3.25,NO
+2023010,Student 010,Faculty of Computer Science,Information Systems,2,3.6,NO
+2023011,Student 011,Faculty of Computer Science,Information Systems,6,3.82,YES
+2023012,Student 012,Faculty of Computer Science,Information Systems,4,3.84,YES
+2023013,Student 013,Faculty of Computer Science,Data Science,8,3.54,NO
+2023014,Student 014,Faculty of Computer Science,Data Science,8,3.66,NO
+2023015,Student 015,Faculty of Computer Science,Informatics,4,3.54,NO
+2023016,Student 016,Faculty of Computer Science,Data Science,4,3.55,NO
+2023017,Student 017,Faculty of Computer Science,Informatics,6,3.75,YES
+2023018,Student 018,Faculty of Computer Science,Informatics,2,3.85,YES
+2023019,Student 019,Faculty of Computer Science,Informatics,2,2.81,NO
+2023020,Student 020,Faculty of Computer Science,Data Science,4,3.79,YES
+2023021,Student 021,Faculty of Computer Science,Informatics,2,3.47,NO
+2023022,Student 022,Faculty of Computer Science,Informatics,4,3.52,NO
+2023023,Student 023,Faculty of Computer Science,Data Science,6,2.85,NO
+2023024,Student 024,Faculty of Computer Science,Data Science,6,3.96,YES
+2023025,Student 025,Faculty of Computer Science,Informatics,8,3.43,NO
+2023026,Student 026,Faculty of Computer Science,Data Science,8,3.55,NO
+2023027,Student 027,Faculty of Computer Science,Informatics,8,3.8,YES
+2023028,Student 028,Faculty of Computer Science,Information Systems,8,3.51,NO
+2023029,Student 029,Faculty of Computer Science,Information Systems,4,3.74,NO
+2023030,Student 030,Faculty of Computer Science,Informatics,4,3.8,YES
+2023031,Student 031,Faculty of Computer Science,Information Systems,2,3.68,NO
+2023032,Student 032,Faculty of Computer Science,Informatics,4,3.15,NO
+2023033,Student 033,Faculty of Computer Science,Information Systems,6,3.6,NO
+2023034,Student 034,Faculty of Computer Science,Informatics,2,2.95,NO
+2023035,Student 035,Faculty of Computer Science,Information Systems,6,3.9,YES
+2023036,Student 036,Faculty of Computer Science,Informatics,6,3.06,NO
+2023037,Student 037,Faculty of Computer Science,Information Systems,6,3.26,NO
+2023038,Student 038,Faculty of Computer Science,Information Systems,2,3.63,NO
+2023039,Student 039,Faculty of Computer Science,Information Systems,4,3.8,YES
+2023040,Student 040,Faculty of Computer Science,Informatics,6,3.2,NO
+2023041,Student 041,Faculty of Computer Science,Data Science,2,2.92,NO
+2023042,Student 042,Faculty of Computer Science,Information Systems,8,3.28,NO
+2023043,Student 043,Faculty of Computer Science,Data Science,6,3.73,NO
+2023044,Student 044,Faculty of Computer Science,Data Science,4,3.99,YES
+2023045,Student 045,Faculty of Computer Science,Informatics,4,3.88,YES
+2023046,Student 046,Faculty of Computer Science,Information Systems,4,2.89,NO
+2023047,Student 047,Faculty of Computer Science,Information Systems,2,3.15,NO
+2023048,Student 048,Faculty of Computer Science,Data Science,6,3.14,NO
+2023049,Student 049,Faculty of Computer Science,Informatics,2,3.29,NO
+2023050,Student 050,Faculty of Computer Science,Data Science,4,3.04,NO
