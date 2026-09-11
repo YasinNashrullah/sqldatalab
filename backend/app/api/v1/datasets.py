@@ -553,7 +553,6 @@ class UseTemplateRequest(BaseModel):
 @router.get("/templates")
 async def list_dataset_templates(
     request: Request,
-    user: User = Depends(get_current_user),
 ):
     """Returns the dynamically scanned catalog of dataset templates with multi-table support."""
     req_id = getattr(request.state, "request_id", "req_tpl_list")
@@ -565,7 +564,6 @@ async def list_dataset_templates(
 async def download_template_dataset(
     template_id: str,
     file: str | None = None,
-    user: User = Depends(get_current_user),
 ):
     """
     Downloads the dataset template.
